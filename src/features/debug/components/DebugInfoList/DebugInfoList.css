@@ -1,0 +1,14 @@
+.DebugInfoList {
+    position: fixed;
+    width: 40%;
+    height: auto;
+    left: 0px;
+    bottom: 0px;
+    padding-left: 6px;
+    padding-bottom: 29px;
+    z-index: 9;
+    word-break: break-all;
+    font-size: 12px;
+    user-select: none;
+    touch-action: none;
+}

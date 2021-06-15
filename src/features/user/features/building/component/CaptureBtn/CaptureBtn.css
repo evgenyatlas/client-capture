@@ -1,0 +1,22 @@
+.CaptureBtn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.CaptureBtn__Cost {
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    color: white;
+    border-radius: 10px;
+    margin-left: 5px;
+    font-weight: bold;
+} 
+
+.CaptureBtn__Cost > img {
+    height: 17px;
+    margin-left: 3px;
+}

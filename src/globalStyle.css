@@ -1,0 +1,17 @@
+:root {
+    --background_content: 'gray';
+}
+
+body {
+    user-select: none;
+    touch-action: none;
+}
+
+.mapboxgl-control-container {
+    display: none;
+}
+
+.clearPaddingVertical {
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+}

@@ -1,0 +1,9 @@
+.GameUI {
+    transition: opacity 0.5s;
+    opacity: 1;
+    position: fixed;
+}
+
+.GameUI_hidden {
+    opacity: 0;
+}

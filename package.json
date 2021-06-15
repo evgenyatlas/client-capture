@@ -1,0 +1,72 @@
+{
+  "name": "client",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cross-env PORT=10888 react-scripts start",
+    "build": "react-scripts build",
+    "predeploy": "npm run build",
+    "deploy": "vk-miniapps-deploy",
+    "analyze": "source-map-explorer 'build/static/js/*.js'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "react-hot-loader": "^4.13.0",
+    "react-scripts": "^4.0.3"
+  },
+  "dependencies": {
+    "@turf/bbox-polygon": "^6.3.0",
+    "@turf/boolean-contains": "^6.3.0",
+    "@turf/boolean-intersects": "^6.3.0",
+    "@turf/boolean-point-in-polygon": "^6.3.0",
+    "@turf/center": "^6.3.0",
+    "@turf/distance": "^6.3.0",
+    "@turf/length": "^6.3.0",
+    "@turf/polygon-to-line": "^6.3.0",
+    "@turf/transform-scale": "^6.3.0",
+    "@turf/transform-translate": "^6.3.0",
+    "@turf/turf": "^6.3.0",
+    "@types/jest": "^26.0.23",
+    "@types/mapbox-gl": "^2.3.0",
+    "@types/node": "^15.12.1",
+    "@types/react": "^17.0.9",
+    "@types/react-dom": "^17.0.6",
+    "@vkontakte/icons": "^1.97.0",
+    "@vkontakte/vk-bridge": "^2.4.1",
+    "@vkontakte/vk-miniapps-deploy": "0.0.25",
+    "@vkontakte/vkjs": "^0.21.0",
+    "@vkontakte/vkui": "^4.6.0",
+    "babel-eslint": "^10.1.0",
+    "chalk": "^4.1.1",
+    "effector": "^21.8.11",
+    "effector-react": "^21.3.2",
+    "eruda": "^2.4.1",
+    "eruda-code": "^2.0.0",
+    "eruda-dom": "^2.0.0",
+    "mapbox-gl": "^2.2.0",
+    "patronum": "^1.1.0",
+    "prop-types": "^15.7.2",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-swipeable": "^6.1.0",
+    "socket.io-client": "^4.1.1",
+    "turf": "^3.0.14",
+    "typescript": "^4.3.2",
+    "use-long-press": "^1.0.5",
+    "worker-loader": "^3.0.8"
+  },
+  "browserslist": {
+    "production": [
+      "last 1 chrome version"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

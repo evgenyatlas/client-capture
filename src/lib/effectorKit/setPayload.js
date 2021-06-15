@@ -1,0 +1,1 @@
+export const setPayload = (state, payload) => payload
