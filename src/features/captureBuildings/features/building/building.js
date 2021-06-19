@@ -18,12 +18,6 @@ export class Building {
     capturedPlayer = null
     startTimeCapture = 0
     geometry = null
-    views = {
-        name: '',
-        layer: null,
-        source: null,
-    }
-    #map = null
 
     constructor(id, geometry, map) {
 
@@ -33,45 +27,15 @@ export class Building {
         this.energyCost = +(this.size * config().GAME.FACTOR_ENERGY_COST).toFixed(0)
         this.energyCostCaptured = Math.ceil(this.energyCost * 2)
         this.geometry = geometry
-        this.#map = map
         // this.initViews()
     }
 
-    async capture({ player, captureTime }) {
-        // if (!this.views.source) this.initViews()
+    capture(player) {
         //Если здание захватывается второй раз то умножаем его стоимость на два
         if (this.capturedPlayer && this.energyCost !== this.energyCostCaptured) {
             this.energyCost = this.energyCostCaptured
         }
         this.capturedPlayer = player
-        // this.startTimeCapture = captureTime
-        // this.#map.setPaintProperty(this.views.name, 'fill-opacity', 0)
-        // await delay(Building.PAINT_TIME_SELECTED)
-        // this.#map.setPaintProperty(this.views.name, 'fill-opacity-transition', { duration: captureTime })
-        // await defer()
-        // this.#map.setPaintProperty(this.views.name, 'line-color', player.color)
-        await defer()
-        // this.#map.setPaintProperty(this.views.name, 'fill-opacity', 1)
-    }
-
-    initViews() {
-        this.views.name = `building_${this.id}`
-        this.#map.addSource(this.views.name, {
-            type: 'geojson',
-            data: null
-        })
-
-        this.#map.addLayer({
-            "id": this.views.name,
-            "source": this.views.name,
-            'type': 'line',
-            'paint': {
-                'line-color': '#888',
-                'line-width': 10
-            },
-        }, 'waterway-label')
-        this.views.source = this.#map.getSource(this.views.name)
-        this.views.source.setData(this.geometry)
     }
 
     getDataServer() {
