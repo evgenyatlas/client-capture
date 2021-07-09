@@ -9,14 +9,14 @@ export function GameMap() {
             rotateTouchMove={true}
             zoom={config().DEFAULT_ZOOM}
             pitch={50}
-            style="mapbox://styles/jeckyhit/ckpmeh77a1d7217m485sd3h02"
+            style="mapbox://styles/jeckyhit/ckqipy8cj2cr417qsyeijp03b"
             // onClicks={[
             //     ['building', (e) => console.log(e.features)]
             // ]}
             // onClicks={[
             //     [e => console.log(e.features)]
             // ]}
-            interactive={true}
+            interactive={false}
         />
     )
 }

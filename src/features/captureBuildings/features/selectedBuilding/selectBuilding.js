@@ -12,7 +12,7 @@ export class SelectedBuilding {
     }
     async select(building) {
         selectBuildingEv(building)
-        this.#viewSource.setData(building.geometry)
+        this.#viewSource.setData(building.feature.geometry)
         await defer()
         this.#map.setPaintProperty(this.#nameSource, 'fill-opacity', 1)
     }
@@ -32,7 +32,7 @@ export class SelectedBuilding {
                 'fill-color': this.#color,
                 'fill-opacity': 0,
             },
-        }, 'waterway-label')
+        }, 'road-label')
         this.#viewSource = this.#map.getSource(this.#nameSource)
     }
 }

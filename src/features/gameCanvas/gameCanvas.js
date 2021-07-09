@@ -6,8 +6,7 @@ import { createElement } from "../../lib/dom/createElement";
 import { setFps, setFpsEv } from "../debug/components/FpsInfo/store";
 
 export class GameCanvas {
-    // static FPS = 45
-    constructor({ map, renderers = [], fps = 45 }) {
+    constructor({ map, renderers = [], fps = 75 }) {
         this.map = map
         this.renderers = renderers
         this.ctx = null
@@ -35,7 +34,6 @@ export class GameCanvas {
         this.factorPixel = factorPixel
         this.canvas = canvas
 
-
         this.launched = true
         this.renderCycle()
     }
@@ -50,7 +48,7 @@ export class GameCanvas {
         const deltaCall = now - this.lastCall
         if (deltaCall > (1000 / config().GAME.FPS)) {
             this.render()
-            //   DEBUG
+            //DEBUG
             setFpsEv(`${(1000 / deltaCall).toFixed(0)} ${config().GAME.FPS}`)
             this.lastCall = now
         }
@@ -63,14 +61,22 @@ export class GameCanvas {
         const factorPixel = this.factorPixel
 
         ctx.clearRect(0, 0, canvas.width, canvas.height)
-
+        // console.time()
         for (let i = 0; i < this.renderers.length; i++) {
-            this.renderers[i].render({ ctx, map, factorPixel })
+            this.renderers[i].render({ ctx, map, factorPixel, canvas })
         }
+        // console.timeEnd()
     }
 
     addRender(render) {
         this.renderers.push(render)
+        if (render.initRender) {
+            const canvas = this.canvas
+            const ctx = this.ctx
+            const map = this.map
+            const factorPixel = this.factorPixel
+            render.initRender({ ctx, map, factorPixel, canvas })
+        }
     }
 
     removeRender(render) {

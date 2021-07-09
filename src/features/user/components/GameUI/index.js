@@ -1,14 +1,15 @@
 import { useStore } from "effector-react"
-import { AttackBtn } from "../../features/attackBtn/components/AttackBtn/index"
+import { AttackBtn } from "../../features/attackBtn/components/AttackBtn/newIndex.js"
 import { DeadNotice } from "../../features/deadNotice/components/DeadNotice"
 import { NumberEnergy } from "../../features/numberEnergy/components/NumberEnergy"
-import { $userDead } from "../../store"
+import { $userColor, $userDead } from "../../store"
 
 import './GameUI.css'
 
 export function GameUI() {
     const userDead = useStore($userDead)
-    return (
+    const fetching = !useStore($userColor)
+    return fetching ? null : (
         <>
             <div className={`GameUI ${userDead ? 'GameUI_hidden' : ''}`}>
                 <AttackBtn />

@@ -1,12 +1,12 @@
 import distance from "@turf/distance"
 import { point } from "@turf/helpers"
 import { square } from "../geo/square"
-import { bounds2bbox } from "./bounds2bbox"
+import { bboxMap } from "./bboxMap"
 import { centerMap } from "./centerMap"
 
 //Возвращает видимую область (с учетом rotate вокруг центра)
 export function viewportMapBbox(map) {
-    const bbox = bounds2bbox(map.getBounds())
+    const bbox = bboxMap(map)
     const center = centerMap(map)
     return square(
         center,

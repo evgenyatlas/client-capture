@@ -9,53 +9,32 @@ import { Game } from './features/game/game'
 
 import './globalStyle.css'
 import { initGeolocation } from './features/geolocation/init';
-import { $gameMap } from './features/gameMap/store';
 import { initGameMap } from './features/gameMap/init';
-import { useStore } from 'effector-react';
-import { $activeModal, hideModal } from './features/modals/store';
-import { SelectedBuildingModal } from './features/user/features/building/component/SelectedBuildingModal';
-import { isVK } from './lib/isVK';
 
-import { GameSettingModal } from './features/gameSetting/components/GameSettingModal';
 import { Modals } from './features/modals/components/Modals';
 
-async function init() {
 
-	let avatarUrl = null
-	let id = null
-	if (isVK()) {
-		const dataProfile = await bridge.send('VKWebAppGetUserInfo')
-		if (dataProfile) {
-			avatarUrl = dataProfile.photo_200
-			id = dataProfile.id
-		}
-	}
-	initGeolocation()
-	initGameMap()
-	$gameMap.watch(map => {
-		if (!map) return
+async function createApp() {
+
+	await initGeolocation()
+
+	initGameMap().then(async map => {
 		const game = new Game({ map })
-		game.init({ avatarUrl, id })
-		window.game = game
+		game.init()
 	})
-}
-
-function createApp() {
-
-	init()
 
 	const App = () => {
 
-		useEffect(() => {
-			bridge.subscribe(({ detail: { type, data } }) => {
-				if (type === 'VKWebAppUpdateConfig') {
-					const schemeAttribute = document.createAttribute('scheme');
-					schemeAttribute.value = data.scheme ? data.scheme : 'client_light';
-					document.body.attributes.setNamedItem(schemeAttribute);
-				}
-			});
+		// useEffect(() => {
+		// 	bridge.subscribe(({ detail: { type, data } }) => {
+		// 		if (type === 'VKWebAppUpdateConfig') {
+		// 			const schemeAttribute = document.createAttribute('scheme');
+		// 			schemeAttribute.value = data.scheme ? data.scheme : 'client_light';
+		// 			document.body.attributes.setNamedItem(schemeAttribute);
+		// 		}
+		// 	});
 
-		}, []);
+		// }, []);
 
 
 		return (
@@ -66,7 +45,6 @@ function createApp() {
 					</Root>
 				</AppRoot>
 				{/*DEBUG*/}
-
 			</AdaptivityProvider>
 		);
 	}

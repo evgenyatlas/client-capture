@@ -5,12 +5,13 @@ import { viewportMapBbox } from "../../lib/mapbox/viewportMapBbox";
 import transformScale from "@turf/transform-scale";
 
 export function initGameMap() {
+    return new Promise((res) => {
+        $gameMap.watch((map) => {
+            if (!map) return
+            //Следование карты за геопозицией
+            mapFollowGeo(map)
 
-    //обьяснить антону про утечку памяти
-    $gameMap.watch((map) => {
-        if (!map) return
-        //Следование карты за геопозицией
-        mapFollowGeo(map)
+            res(map)
+        })
     })
-
 }

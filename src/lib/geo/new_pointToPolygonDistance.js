@@ -4,7 +4,6 @@ import { polygonToLine } from '@turf/polygon-to-line'
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon'
 
 export function pointToPolygonDistance(point, polygon) {
-    console.log(polygon)
 
     point = createPoint(point)
     // polygon = createPolygon(polygon)

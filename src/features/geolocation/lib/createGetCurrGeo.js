@@ -8,11 +8,10 @@ export function createGetCurrGeo() {
     let getPosition
 
     if (document.location.search.indexOf('geo-key') > -1) {
+        const distance = config().GEOKEY_STEP
         let position = config().DEFAULT_GEO
         document.addEventListener('keydown', ({ keyCode }) => {
-            const distance = config().GEOKEY_STEP
             const dictForwardKey = { 38: true, 87: true }
-
             if (dictForwardKey[keyCode])
                 position = transformTranslate(
                     {
@@ -29,6 +28,39 @@ export function createGetCurrGeo() {
                     }
                 ).geometry.coordinates
         })
+        getPosition = res => {
+            res({ coords: roundGeoArr(position), accuracy: 1 })
+        }
+    }
+    else if (document.location.search.indexOf('mobile-key') > -1) {
+        const distance = config().GEOKEY_STEP
+        let position = config().DEFAULT_GEO
+        if (/android|iphone/.test(window.navigator.userAgent.toLowerCase())) {
+            const btnUp = document.createElement('div')
+            btnUp.style.position = 'fixed'
+            btnUp.style.zIndex = '9'
+            btnUp.style.width = '200px'
+            btnUp.style.height = '100px'
+            btnUp.style.right = '100px'
+            btnUp.style.bottom = '0px'
+            document.body.appendChild(btnUp)
+            btnUp.addEventListener('click', () => {
+                position = transformTranslate(
+                    {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: position
+                        }
+                    },
+                    distance,
+                    $gameMap.getState().getBearing(),
+                    {
+                        units: 'meters'
+                    }
+                ).geometry.coordinates
+            })
+        }
         getPosition = res => {
             res({ coords: roundGeoArr(position), accuracy: 1 })
         }

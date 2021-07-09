@@ -6,10 +6,11 @@ import { $user, $userColor, captureBuildingUserEv } from "../../../../../user/st
 import './CaptureBtn.css'
 
 
-export function CaptureBtn({ notAvailable, cost }) {
+export function CaptureBtn({ notAvailable }) {
     const { player } = useStore($user)
     const building = useStore($selectedBuilding)
     const color = useStore($userColor)
+    const cost = building.capturedPlayer ? building.energyCostCaptured : building.energyCost
     return (<>
         <Button
             style={{ background: color }}

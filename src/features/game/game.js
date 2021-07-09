@@ -3,12 +3,14 @@ import { io } from 'socket.io-client'
 import config from "../../config"
 import { Player } from "../player/player"
 import { CaptureBuildings } from '../captureBuildings/captureBuildings'
-import { $geolocation } from "../geolocation/store"
 import { forEachObj } from "../../lib/obj/forEachObj"
 import { User } from "../user/user"
 import { GAME_STATUSES } from "./const"
 import { captureBuildingEv } from "../captureBuildings/store"
 import { DeadArea } from "../deadArea/DeadArea"
+import { getUserData } from "../user/lib/getUserData"
+import { $smothCoords } from "../geolocation/store"
+import { $userEnergyFactor, setEnergyFactor } from "../user/store"
 
 export class Game {
     #players = {}
@@ -27,7 +29,6 @@ export class Game {
         //Создаем менеджер для захвата строений
         this.#captureBuilding = new CaptureBuildings({
             map: this.#map,
-            gameCanvas: this.#gameCanvas,
             players: this.#players
         })
         //Создаем область смерти
@@ -35,34 +36,36 @@ export class Game {
         // this.#gameCanvas.addRender(this.#deadArea)
     }
 
-    init({ avatarUrl, id } = {}) {
+    async init() {
+        //Получаем пользовательские данные для сервера
+        const userData = await getUserData(this.#map, $smothCoords.getState())
+
         //Создаем подключение и передаем нашу аватарку, а так же id вк
         const socket = new io(config().SERVER_URL, {
-            query:
-                avatarUrl ?
-                    {
-                        avatarUrl,
-                        id
-                    }
-                    :
-                    null
+            query: {
+                userData: JSON.stringify(userData)
+            }
         })
+
+        const userId = userData.id
 
         //Подписываемся на события передачи начальных данных
         socket.on('init', (data) => {
+
             // this.mySocket = socket
             this.status = data.status
             this.startTime = data.startTime
             //Записываем настройки в конфиг
             config().GAME = { ...data.GAME, ...config().GAME }
+            //Инициализируем canvas для отрисовки игрового процесса
+            this.#gameCanvas.init()
             //Создаем всех игроков полученных с сервера
             forEachObj(data.players, (playerId, player) => this.onAddPlayer(player))
             //Создаем пользователя (для работы с текущим игроком)
-            this.#user = new User({ player: this.#players[socket.id], socket, map: this.#map })
+            this.#user = new User({ player: this.#players[userId], socket, map: this.#map })
             //Инициализируем менеджер захвата строений
-            this.#captureBuilding.init({ user: this.#user })
-            //Инициализируем canvas для отрисовки игрового процесса
-            this.#gameCanvas.init()
+            this.#captureBuilding.init({ user: this.#user, buildings: data.captureBuildings })
+
         })
 
         //Обновляем страницу, при отключение от сервера (почему бы и нет...)
@@ -97,6 +100,8 @@ export class Game {
         this.#gameCanvas.addRender(player)
         //Добавляем его в словарь по id
         this.#players[player.id] = player
+
+        this.#captureBuilding
     }
 
     //Обработка удаления игроков
@@ -108,14 +113,15 @@ export class Game {
     }
 
     //Обработка обновления энергии
-    onUpdateEnergy = ({ playerId, energy }) => {
+    onUpdateEnergy = ({ playerId, energy, energyFactor }) => {
         const player = this.#players[playerId]
         player.energy += energy
         //Если это наш пользователь, то вызываем метод для обновления UI
         if (this.#user.player.id === playerId) {
+            //Синхронизация множителя энергии (если по какой-то причине данные с сервера не совпадают с клиентом)
+            $userEnergyFactor.getState() !== energyFactor && setEnergyFactor(energyFactor)
             this.#user.updateEnergy(energy)
         }
-
     }
 
     //Обработка атак
@@ -134,7 +140,15 @@ export class Game {
                 this.#user.updateEnergy(-damagePlayer.energyDamage)
             }
             //Наносим урон
-            this.#players[damagePlayer.id].damage(damagePlayer.energyDamage, attacking)
+            this.#players[damagePlayer.id]
+                .damage(
+                    //Урон
+                    damagePlayer.energyDamage,
+                    //Атакующий
+                    attacking,
+                    //позиция отскока
+                    damagePlayer.position
+                )
         })
 
     }
@@ -145,6 +159,7 @@ export class Game {
 
     //Обработка смены позиции игроков
     onChangePositon = ({ playerId, position }) => {
+        console.log('change')
         const player = this.#players[playerId]
         player.changePosition(position)
     }
@@ -152,10 +167,8 @@ export class Game {
     //Обработка захвата строений
     onCaptureBuilding = ({ building, playerId }) => {
         const player = this.#players[playerId]
-        //Списываем с игрока стоимость строения
-        player.updateEnergy(-building.energyCost)
         //Вызываем событие для захвата (На него подписан МенеджерЗахвата и наш UI)
-        captureBuildingEv({ building, player: this.#players[playerId] })
+        captureBuildingEv({ building, player })
     }
 
     startGame = ({ startTime }) => {

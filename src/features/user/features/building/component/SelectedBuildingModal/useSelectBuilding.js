@@ -11,7 +11,7 @@ export function useSelectBuilding() {
     const currCoords = useStore($smothCoords)
     const selectBuilding = useStore($selectedBuilding)
     let notAvailable = ''
-    if (selectBuilding.geometry && pointToPolygonDistance(currCoords, selectBuilding.geometry) > CaptureBuildings.MIN_CAPTURE_DISTANCE) {
+    if (selectBuilding.feature && selectBuilding.feature.geometry && pointToPolygonDistance(currCoords, selectBuilding.feature.geometry) > CaptureBuildings.MIN_CAPTURE_DISTANCE) {
         notAvailable = <>{`Может подойдешь ближе?`} < br /> {`Минимальное расстояние ${CaptureBuildings.MIN_CAPTURE_DISTANCE}м`}</>
     }
     else if (selectBuilding.capturedPlayer && selectBuilding.capturedPlayer.id === userId) {

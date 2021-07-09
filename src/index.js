@@ -5,16 +5,13 @@ import createApp from "./app";
 
 //DISABLE CONTEXT MENU
 
-function main() {
+async function main() {
 
-  const App = createApp()
-
+  const App = await createApp()
   bridge.send("VKWebAppInit");
   ReactDOM.render(<App />, document.getElementById("root"));
 
-  // if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === 'production') {
-  //   import("./eruda").then(({ default: eruda }) => { }); //runtime download
-  // }
+  // import("./eruda").then(({ default: eruda }) => { }); //runtime download
 
 }
 

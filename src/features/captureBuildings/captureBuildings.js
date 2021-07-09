@@ -1,33 +1,40 @@
-import { geometry } from "@turf/turf"
-import { delay } from "../../lib/async/delay"
 import { getFeatureId } from "../../lib/mapbox/getFeatureId"
 import { Building } from './features/building/building'
 import { captureBuildingEv, hideBuildingInfo, selectBuildingEv } from "./store"
 import { SelectedBuilding } from './features/selectedBuilding/selectBuilding'
+import { CaptureAnim } from "./features/captureAnim/captureAnim"
+import { RenderBuildings } from "./features/renderBuildings/renderBuildings"
 
 export class CaptureBuildings {
     static MIN_CAPTURE_DISTANCE = 50
     static CAPTURE_TIME = 4000
-
+    #layerStyle = {
+        "id": 'capture',
+        "source": 'capture',
+        'type': 'fill',
+        'paint': {
+            'fill-color': ['get', 'color'],
+            // 'fill-width': 10,
+        }
+    }
     #map = null
     #user = null
     #players
     #buildings = {}
     #selectedBuilding = null
-    #gameCanvas
-    #viewSource
-    #nameSource = 'captureBuilding'
+    #captureAnim
+    #renderBuildings
 
-    constructor({ map, gameCanvas }) {
+    constructor({ map, players }) {
         this.#map = map
-        this.#gameCanvas = gameCanvas
+        this.#players = players
+        this.#renderBuildings = new RenderBuildings(map, this.#layerStyle)
     }
 
-    init({ buildings, user, players }) {
-
+    init({ buildings, user }) {
         this.#user = user
-        this.#players = players
         this.#selectedBuilding = new SelectedBuilding(this.#map)
+        this.#captureAnim = new CaptureAnim(this.#map, this.#layerStyle)
         /*Обработка событий*/
         //Фокус на строение (выбор)
         this.onSelectBuilding()
@@ -35,47 +42,33 @@ export class CaptureBuildings {
         this.onUnSelectBuilding()
         //захват строений
         this.onCaptureBuilding()
-
-        this.initView()
+        //Прогрузка строений
+        this.#user.socket.on('loadingBuildings', this.#handlerLoadingBuildings)
+        //Если здания переданы, то прогружаем их
+        if (buildings.length > 0)
+            this.load(buildings)
     }
 
-    initView() {
-        this.#map.addSource(this.#nameSource, {
-            type: 'geojson',
-            data: null
-        })
-        this.#map.addLayer({
-            "id": this.#nameSource,
-            "source": this.#nameSource,
-            'type': 'line',
-            'paint': {
-                'line-color': ['get', 'color'],
-                'line-width': 10
-            },
-        }, 'waterway-label')
-        this.#viewSource = this.#map.getSource(this.#nameSource)
+    #handlerLoadingBuildings = (buildings) => {
+        this.load(buildings)
     }
 
     //Обработка захвата строений
     onCaptureBuilding() {
-        const features = []
         captureBuildingEv.watch(async ({ player, building }) => {
             //Снимаем фокус с строения (если он на нем)
             this.unSelectBuilding()
-            const captureBuilding = this.getBuilding(building.id, building.geometry)
+            const captureBuilding = this.getBuilding(building)
             //Если строение уже захваченно нашим пользователем, то вызываем метод (который отнимет множитель энерегии и тд)
             if (captureBuilding.capturedPlayer === this.#user.player) this.#user.unCaptureBuilding(captureBuilding)
             //Вызываем у строения метод захвата
-            captureBuilding.capture({ player, captureTime: CaptureBuildings.CAPTURE_TIME })
-            features.push({
-                type: 'Feature', geometry: building.geometry, properties: {
-                    color: player.color
-                }
-            })
-            this.#viewSource.setData({
-                type: 'FeatureCollection',
-                features: features
-            })
+            captureBuilding.capture(player)
+            //Добавляем здание в рендер
+            this.#renderBuildings.add(captureBuilding)
+            //Вызываем анимацию захвата и ждем
+            await this.#captureAnim.anim(captureBuilding.feature)
+            //Отрисовываем здания
+            this.#renderBuildings.render()
         })
     }
 
@@ -84,31 +77,11 @@ export class CaptureBuildings {
         this.#map.on('click', 'building', (e) => {
             const feature = e.features[0]
             const buildingId = getFeatureId(feature)
-
-            const building = this.getBuilding(buildingId, feature.geometry)
+            const building = this.getBuilding({
+                id: buildingId,
+                feature: Building.getCleanFeature(feature)
+            })
             this.#selectedBuilding.select(building)
-
-
-
-            // this.#gameCanvas.addRender({
-            //     render({ ctx, factorPixel, map }) {
-            //         ctx.beginPath()
-            //         feature.geometry.coordinates[0].forEach((coord, i) => {
-            //             const pos = map.project(coord)
-            //             if (i === 0) {
-            //                 ctx.moveTo(pos.x * factorPixel, pos.y * factorPixel);
-            //                 return
-            //             }
-            //             ctx.lineTo(pos.x * factorPixel, pos.y * factorPixel);
-            //             // console.timeEnd()
-            //             // ctx.fillStyle = 'black'
-            //             // ctx.fill();
-            //             ctx.strokeStyle = "#969696";
-            //             ctx.lineWidth = 15
-            //             ctx.stroke()
-            //         })
-            //     }
-            // })
         })
     }
 
@@ -121,11 +94,27 @@ export class CaptureBuildings {
         this.#selectedBuilding.unselect()
     }
 
-    getBuilding(buildingId, geometry) {
-        if (!this.#buildings[buildingId])
-            this.#buildings[buildingId] = new Building(buildingId, geometry, this.#map)
-        console.log(Object.keys(this.#buildings).length)
-        return this.#buildings[buildingId]
+    //Прогрузка зданий
+    load(buildings) {
+        //Очищаем рендеринг
+        this.#renderBuildings.clear()
+        //Очищаем здания в словаре
+        this.#buildings = {}
+        //Добавляем каждое здание в словарь и рендиринг
+        for (let i = 0; i < buildings.length; i++) {
+            const building = this.getBuilding(buildings[i])
+            const capturedPlayer = this.#players[buildings[i].capturedPlayer]
+            if (capturedPlayer) building.capture(capturedPlayer)
+            this.#renderBuildings.add(building)
+        }
+        this.#renderBuildings.render()
+    }
+
+    getBuilding(building) {
+        if (!this.#buildings[building.id])
+            this.#buildings[building.id] = new Building(building)
+
+        return this.#buildings[building.id]
     }
 
 }

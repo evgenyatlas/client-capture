@@ -45,7 +45,7 @@ export class DeadArea {
             'layout': {},
             'paint': {
                 'line-color': '#969696',
-                'line-width': 5
+                'line-width': 20
             }
         }, 'poi-label')
 

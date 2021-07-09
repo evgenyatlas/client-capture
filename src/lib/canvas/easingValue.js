@@ -1,7 +1,5 @@
 import { lerp } from "../easing/lerp"
 
-const getValue = v => v
-
 export class EasingValue {
 
     #prevValue
@@ -9,19 +7,30 @@ export class EasingValue {
     #nextValue
     #getter
     #easing
+    get easing() {
+        return this.#easing
+    }
     #duration
+    get duration() {
+        return this.#duration
+    }
+    #delay
     #timeLastChange
     #endFn
     #backwards
+    active
 
     constructor({
         value,
         nextValue,
         getter,
+        delay = 0,
         duration = 1000,
         easing = lerp,
         backwards,
-        endFn
+        endFn,
+        active = true,
+        restore
     }) {
         this.#prevValue = value
         this.#currValue = value
@@ -29,21 +38,45 @@ export class EasingValue {
         this.#backwards = backwards
         this.#getter = getter
         this.#endFn = endFn
+        this.active = active
 
         this.#easing = easing
         this.#duration = duration
-        this.#timeLastChange = performance.now()
+        this.#delay = delay
+
+        this.#timeLastChange = performance.now() + this.#delay
+
+        //Метод что бы восстановить дефолтные настройки
+        if (restore)
+            this.restore = () => {
+                this.#delay = delay
+                this.#easing = easing
+                this.#duration = duration
+            }
     }
-    set(value) {
-        this.#prevValue = this.#currValue
-        this.#nextValue = value
-        this.#timeLastChange = performance.now()
+    // set(value) {
+    //     this.#prevValue = this.#currValue
+    //     this.#nextValue = value
+    //     this.#timeLastChange = performance.now() + this.#delay
+    //     this.active = true
+    // }
+    getT() {
+        const now = performance.now()
+
+        return (
+            (this.#delay && performance.now() < this.#timeLastChange)
+                ?
+                0
+                :
+                ((now - this.#timeLastChange) / this.#duration)
+        )
     }
     get() {
-        const now = performance.now()
-        let t = ((now - this.#timeLastChange) / this.#duration)
+        const t = this.getT()
         // t = t >= 1 ? 1 : t
+
         if (t >= 1) {
+            this.active = false
             if (this.#endFn) {
                 this.#endFn()
             }
@@ -59,5 +92,19 @@ export class EasingValue {
             return this.#currValue = this.#getter(this.#prevValue, this.#nextValue, t, this.#easing)
 
         return this.#currValue = this.#easing(this.#prevValue, this.#nextValue, t)
+    }
+    set(value) {
+
+        this.#prevValue = this.#currValue
+        this.#nextValue = value
+        this.#timeLastChange = performance.now() + this.#delay
+
+        this.active = true
+    }
+    setDuration(duration) {
+        this.#duration = duration
+    }
+    setEasing(easing) {
+        this.#easing = easing
     }
 }

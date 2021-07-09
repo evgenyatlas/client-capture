@@ -2,6 +2,7 @@ import mapboxgl from "mapbox-gl";
 import { useEffect, useRef } from "react";
 import { useSwipeable } from "react-swipeable";
 import config from "../../../../config";
+import { $smothCoords } from "../../../../features/geolocation/store";
 //fix build
 mapboxgl.workerClass = require("worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker").default;
 
@@ -17,7 +18,7 @@ export function ReactMapbox({
     onClicks,
     rotateTouchMove,
     pitch = 0,
-    center = config().DEFAULT_GEO,
+    center = $smothCoords.getState(),
     // style = 'mapbox://styles/mapbox/light-v9?optimize=true'
     style = "mapbox://styles/jeckyhit/ckpmeh77a1d7217m485sd3h02?v=1"
 }) {

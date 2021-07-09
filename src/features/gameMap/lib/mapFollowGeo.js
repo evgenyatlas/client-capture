@@ -1,7 +1,7 @@
 import { debounce } from "@vkontakte/vkjs"
 import config from "../../../config"
 import { roundGeoObj } from "../../../lib/geo/roundGeo"
-import { $smothCoords, setBbox } from "../../geolocation/store"
+import { $smothCoords } from "../../geolocation/store"
 import { flyTo } from "./flyTo"
 
 export function mapFollowGeo(map) {

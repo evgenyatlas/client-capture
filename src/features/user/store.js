@@ -7,6 +7,7 @@ import { hideModal } from "../modals/store";
 export const setUserEv = createEvent()
 export const updateEnergyEv = createEvent()
 export const updateEnergyFactorEv = createEvent()
+export const setEnergyFactor = createEvent()
 //События захвата здания нашего пользователя (фильтурем из всех событий захвата)
 export const captureBuildingUserEv = captureBuildingEv.filter({
     fn: ({ player: { id } }) => id === $userId.getState()
@@ -20,6 +21,7 @@ export const $userEnergyFactor = $user.map(({ player }) => player ? player.energ
 export const $userDead = $userEnergy.map(energy => energy <= 0)
 
 $userEnergy.on(updateEnergyEv, (energy, addedEnergy) => energy + addedEnergy)
+$userEnergyFactor.on(setEnergyFactor, setPayload)
 $userEnergyFactor.on(updateEnergyFactorEv, (energyFactor, addedEnergyFactor) => +((energyFactor + addedEnergyFactor).toFixed(2)))
 $user.on(setUserEv, setPayload)
 
