@@ -137,7 +137,7 @@ export class Game {
         damagePlayers.forEach(damagePlayer => {
             //Если это наш пользователь, то вызываем у user метод для обновления UI
             if (this.#user.id === damagePlayer.id) {
-                this.#user.updateEnergy(-damagePlayer.energyDamage)
+                this.#user.damage(-damagePlayer.energyDamage)
             }
             //Наносим урон
             this.#players[damagePlayer.id]

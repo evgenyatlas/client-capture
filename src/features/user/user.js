@@ -1,7 +1,10 @@
 import { attackEv } from "../user/features/attackBtn/store";
-import { $smothCoords } from "../geolocation/store";
+import { $smothCoords, freezeGeolocation, unFreezeGeolocation } from "../geolocation/store";
 import { captureBuildingUserEv, setUserEv, updateEnergyEv, updateEnergyFactorEv } from "./store";
+import { debounce } from "@vkontakte/vkjs";
+import { Player } from "../player/player";
 
+const deferUnFreezeGeolocation = debounce(unFreezeGeolocation, Player.ATACK_TIME)
 
 export class User {
     id = ''
@@ -22,7 +25,6 @@ export class User {
         captureBuildingUserEv.watch(this.#captureBuilding)
         //Реакция на события (из UI) атаки
         attackEv.watch(this.#attack)
-
     }
 
     //Метод обновления energy для UI
@@ -43,6 +45,11 @@ export class User {
     }
     unCaptureBuilding = captureBuilding => {
         updateEnergyFactorEv(-captureBuilding.energyFactor)
+    }
+    damage(energy) {
+        this.updateEnergy(energy)
+        freezeGeolocation()
+        deferUnFreezeGeolocation()
     }
     //Атака
     #attack = (energy = 1) => {

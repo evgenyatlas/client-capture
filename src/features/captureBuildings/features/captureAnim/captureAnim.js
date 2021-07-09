@@ -35,9 +35,12 @@ export class CaptureAnim {
         view.source.setData(feature)
         this.#map.setPaintProperty(view.name, 'fill-opacity', 1)
         await delay(this.#duration)
-        view.source.setData(this.#emptyFeature)
-        this.#map.setPaintProperty(view.name, 'fill-opacity', 0)
-        view.free = true
+        delay(10).then(() => {
+            view.source.setData(this.#emptyFeature)
+            this.#map.setPaintProperty(view.name, 'fill-opacity', 0)
+            view.free = true
+        })
+
     }
     #addViews = count => {
         for (let i = 0; i < count; i++) {
