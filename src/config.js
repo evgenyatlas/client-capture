@@ -3,7 +3,7 @@ const DEFAULT = {
     DEFAULT_GEO: [30.326678, 59.935736],
     DEFAULT_ZOOM: 18,
     MIN_DISTANCE_CAMERA_MOVE: 10,
-    GEOKEY_STEP: 5,
+    GEOKEY_STEP: 1,
     TIMEOUT_GEO_BROADCAST: 1000,
     GAME: {
         //Остальные данные приходят с сервера

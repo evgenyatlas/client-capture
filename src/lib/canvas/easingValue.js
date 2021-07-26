@@ -14,11 +14,14 @@ export class EasingValue {
     get duration() {
         return this.#duration
     }
+    get active() {
+        return this.#active
+    }
+    #active = false
     #delay
     #timeLastChange
     #endFn
     #backwards
-    active
 
     constructor({
         value,
@@ -29,7 +32,6 @@ export class EasingValue {
         easing = lerp,
         backwards,
         endFn,
-        active = true,
         restore
     }) {
         this.#prevValue = value
@@ -38,7 +40,6 @@ export class EasingValue {
         this.#backwards = backwards
         this.#getter = getter
         this.#endFn = endFn
-        this.active = active
 
         this.#easing = easing
         this.#duration = duration
@@ -62,21 +63,22 @@ export class EasingValue {
     // }
     getT() {
         const now = performance.now()
+        const t = (this.#delay && performance.now() < this.#timeLastChange)
+            ?
+            0
+            :
+            ((now - this.#timeLastChange) / this.#duration)
 
-        return (
-            (this.#delay && performance.now() < this.#timeLastChange)
-                ?
-                0
-                :
-                ((now - this.#timeLastChange) / this.#duration)
-        )
+        if (t > 1)
+            this.#active = false
+
+        return t
     }
     get() {
         const t = this.getT()
         // t = t >= 1 ? 1 : t
 
         if (t >= 1) {
-            this.active = false
             if (this.#endFn) {
                 this.#endFn()
             }
@@ -94,12 +96,11 @@ export class EasingValue {
         return this.#currValue = this.#easing(this.#prevValue, this.#nextValue, t)
     }
     set(value) {
-
         this.#prevValue = this.#currValue
         this.#nextValue = value
         this.#timeLastChange = performance.now() + this.#delay
 
-        this.active = true
+        this.#active = true
     }
     setDuration(duration) {
         this.#duration = duration

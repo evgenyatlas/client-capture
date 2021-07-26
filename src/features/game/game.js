@@ -11,6 +11,9 @@ import { DeadArea } from "../deadArea/DeadArea"
 import { getUserData } from "../user/lib/getUserData"
 import { $smothCoords } from "../geolocation/store"
 import { $userEnergyFactor, setEnergyFactor } from "../user/store"
+import destination from "@turf/destination"
+import { centerMap } from "../../lib/mapbox/centerMap"
+import { calcDistanceAttackPixel } from "../player/lib/calcDistanceAttackPixel"
 
 export class Game {
     #players = {}
@@ -59,6 +62,7 @@ export class Game {
             config().GAME = { ...data.GAME, ...config().GAME }
             //Инициализируем canvas для отрисовки игрового процесса
             this.#gameCanvas.init()
+            Player.calcPixel({ map: this.#map, factorPixel: this.#gameCanvas.factorPixel })
             //Создаем всех игроков полученных с сервера
             forEachObj(data.players, (playerId, player) => this.onAddPlayer(player))
             //Создаем пользователя (для работы с текущим игроком)
@@ -82,15 +86,20 @@ export class Game {
         socket.on('removePlayer', this.onRemovePlayer)
         //Смена позиции игроков
         socket.on('changePosition', this.onChangePositon)
+        //Поворот игроков
+        socket.on('rotate', this.onRotate)
         //Захвата строений
         socket.on('captureBuilding', this.onCaptureBuilding)
         //Область смерти
         socket.on('deadArea', this.onDeadArea)
+        //Установка готовности атаки
+        socket.on('switchAttackReady', this.switchAttackReady)
         //Атак игроков
         socket.on('attack', this.onAttack)
         //Обновление энергии
         socket.on('updateEnergy', this.onUpdateEnergy)
     }
+
 
     //Обработка новых игроков
     onAddPlayer = (data) => {
@@ -100,8 +109,6 @@ export class Game {
         this.#gameCanvas.addRender(player)
         //Добавляем его в словарь по id
         this.#players[player.id] = player
-
-        this.#captureBuilding
     }
 
     //Обработка удаления игроков
@@ -122,6 +129,12 @@ export class Game {
             $userEnergyFactor.getState() !== energyFactor && setEnergyFactor(energyFactor)
             this.#user.updateEnergy(energy)
         }
+    }
+
+    //Вкл/Выкл готовность к атаке 
+    switchAttackReady = ({ playerId, turn }) => {
+        const player = this.#players[playerId]
+        player.switchAttackReady(turn)
     }
 
     //Обработка атак
@@ -159,9 +172,13 @@ export class Game {
 
     //Обработка смены позиции игроков
     onChangePositon = ({ playerId, position }) => {
-        console.log('change')
         const player = this.#players[playerId]
         player.changePosition(position)
+    }
+
+    onRotate = ({ playerId, bearing }) => {
+        const player = this.#players[playerId]
+        player.rotate(-bearing)
     }
 
     //Обработка захвата строений

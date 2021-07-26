@@ -1,0 +1,1 @@
+export const easeComparing = (ease) => (a, b, t) => a === b ? b : ease(a, b, t)

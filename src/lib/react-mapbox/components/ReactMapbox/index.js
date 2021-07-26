@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { useSwipeable } from "react-swipeable";
 import config from "../../../../config";
 import { $smothCoords } from "../../../../features/geolocation/store";
+import { rotateMap } from "../../../mapbox/rotateMap";
 //fix build
 mapboxgl.workerClass = require("worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker").default;
 
@@ -18,7 +19,8 @@ export function ReactMapbox({
     onClicks,
     rotateTouchMove,
     pitch = 0,
-    center = $smothCoords.getState(),
+    centerFn,
+    center,
     // style = 'mapbox://styles/mapbox/light-v9?optimize=true'
     style = "mapbox://styles/jeckyhit/ckpmeh77a1d7217m485sd3h02?v=1"
 }) {
@@ -27,11 +29,12 @@ export function ReactMapbox({
     const mapbox = useRef()
     useEffect(() => {
         if (!container.current) return
+
         const map = new mapboxgl.Map({
             style,
             container: container.current,
             zoom,
-            center,
+            center: (center ? center : centerFn()),
             accessToken: MAPBOX_TOKEN,
             interactive,
             pitch
@@ -95,10 +98,8 @@ export function ReactMapbox({
     const SwipeWrapper = ({ children }) => {
         if (rotateTouchMove) {
             const rotate = (data) =>
-                mapbox.current.rotateTo(
-                    mapbox.current.getBearing() + data.deltaY * 0.2,
-                    { duration: 500 }
-                );
+                rotateMap(mapbox.current, data.deltaY * 0.2, 500)
+
             const handlers = useSwipeable({
                 onSwipedUp: rotate,
                 onSwipedDown: rotate,

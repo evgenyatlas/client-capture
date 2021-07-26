@@ -35,6 +35,8 @@ export class CaptureAnim {
         view.source.setData(feature)
         this.#map.setPaintProperty(view.name, 'fill-opacity', 1)
         await delay(this.#duration)
+        //Сделанно в таком формате, что бы не было мерцания
+        //Когда мы ожидаем анимацию и закрашиваем здание
         delay(10).then(() => {
             view.source.setData(this.#emptyFeature)
             this.#map.setPaintProperty(view.name, 'fill-opacity', 0)
@@ -57,7 +59,7 @@ export class CaptureAnim {
         this.#layerStyle.source = name
         this.#map.addLayer(
             this.#layerStyle,
-            'road-label'
+            'country-label'
         )
         const view = { source: this.#map.getSource(name), free: true, name }
         this.#views.push(view)

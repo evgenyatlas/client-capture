@@ -13,15 +13,14 @@ import { initGameMap } from './features/gameMap/init';
 
 import { Modals } from './features/modals/components/Modals';
 
-
 async function createApp() {
 
-	await initGeolocation()
-
-	initGameMap().then(async map => {
+	async function init() {
+		await initGeolocation()
+		const map = await initGameMap()
 		const game = new Game({ map })
 		game.init()
-	})
+	}
 
 	const App = () => {
 
@@ -48,6 +47,8 @@ async function createApp() {
 			</AdaptivityProvider>
 		);
 	}
+
+	init()
 
 	return App
 }

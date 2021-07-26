@@ -7,7 +7,9 @@ import { setPayload } from "../../lib/effectorKit/setPayload";
 import { distanceMeters } from "../../lib/geo/distance";
 
 export const setGeolocation = createEvent()
+export const setReadyGeolocation = createEvent()
 
+export const $readyGeolocation = createStore(false)
 export const $geolocation = createStore({ coords: [0, 0], accuracy: 0 })
 export const $geolocationCoords = $geolocation.map(({ coords }) => coords)
 export const $smothCoords = createStore([0, 0])
@@ -16,5 +18,6 @@ const { $store: $frozen, on: freezeGeolocation, off: unFreezeGeolocation } = cre
 export { freezeGeolocation, unFreezeGeolocation }
 
 $geolocation.on(setGeolocation, setPayload)
+$readyGeolocation.on(setReadyGeolocation, () => true)
 
 $smothCoords.on($geolocation, (currCoords, geo) => !$frozen.getState() && distanceMeters(currCoords, geo.coords) >= geo.accuracy ? geo.coords : undefined)

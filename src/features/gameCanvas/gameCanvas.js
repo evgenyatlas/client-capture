@@ -36,6 +36,7 @@ export class GameCanvas {
 
         this.launched = true
         this.renderCycle()
+        map.on('render', this.render)
     }
 
     renderCycle = () => {
@@ -43,15 +44,10 @@ export class GameCanvas {
 
         requestAnimationFrame(this.renderCycle)
 
-        const now = performance.now()
-        // limit frames
-        const deltaCall = now - this.lastCall
-        if (deltaCall > (1000 / config().GAME.FPS)) {
-            this.render()
-            //DEBUG
-            setFpsEv(`${(1000 / deltaCall).toFixed(0)} ${config().GAME.FPS}`)
-            this.lastCall = now
-        }
+
+        this.render()
+        //DEBUG
+
     }
 
     render = () => {
@@ -59,13 +55,17 @@ export class GameCanvas {
         const ctx = this.ctx
         const map = this.map
         const factorPixel = this.factorPixel
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-        // console.time()
-        for (let i = 0; i < this.renderers.length; i++) {
-            this.renderers[i].render({ ctx, map, factorPixel, canvas })
+        const now = performance.now()
+        // limit frames
+        const deltaCall = now - this.lastCall
+        if (deltaCall > (1000 / config().GAME.FPS)) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            for (let i = 0; i < this.renderers.length; i++) {
+                this.renderers[i].render({ ctx, map, factorPixel, canvas })
+            }
+            setFpsEv(`${(1000 / deltaCall).toFixed(0)} ${config().GAME.FPS}`)
+            this.lastCall = now
         }
-        // console.timeEnd()
     }
 
     addRender(render) {

@@ -32,7 +32,7 @@ export class SelectedBuilding {
                 'fill-color': this.#color,
                 'fill-opacity': 0,
             },
-        }, 'road-label')
+        }, 'country-label')
         this.#viewSource = this.#map.getSource(this.#nameSource)
     }
 }

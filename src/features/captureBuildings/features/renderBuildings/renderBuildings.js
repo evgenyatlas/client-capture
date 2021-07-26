@@ -52,7 +52,7 @@ export class RenderBuildings {
             type: 'geojson',
             data: null
         })
-        this.#map.addLayer(this.#layerStyle, 'road-label')
+        this.#map.addLayer(this.#layerStyle, 'country-label')
 
         this.#source = this.#map.getSource(nameCapture)
     }

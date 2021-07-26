@@ -47,7 +47,7 @@ export class DeadArea {
                 'line-color': '#969696',
                 'line-width': 20
             }
-        }, 'poi-label')
+        }, 'country-label')
 
         this.#view.source = this.#map.getSource(this.#view.name)
     }

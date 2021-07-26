@@ -1,5 +1,6 @@
 import config from '../../../config'
 import { delay } from "../../../lib/async/delay"
+import { setReadyGeolocation } from '../store'
 import { createGetCurrGeo } from "./createGetCurrGeo"
 
 
@@ -9,6 +10,7 @@ export async function broadcastGeo(fn) {
         await delay(config().TIMEOUT_GEO_BROADCAST)
         const getCurrGeo = createGetCurrGeo()
         await getCurrGeo()
+        setReadyGeolocation()
         return getCurrGeo
     }
 
