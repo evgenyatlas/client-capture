@@ -44,7 +44,6 @@ export function AttackBtn() {
     return (
         <button
             className={`AttackBtn ${!avail ? "AttackBtn_disabled" : ''} ${posY ? 'AttackBtn_drag' : ''}`}
-            onClick={avail && !selected ? () => attackEv(attackEnergy) : undefined}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
             style={{ transform: `translateY(${posY || maxY}px)` }}

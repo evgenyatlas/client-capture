@@ -1,10 +1,11 @@
 .AttackBtn {
     position: fixed;
     z-index: 9;
-    right: 20px;
+    right: 10px;
     /* bottom: 20px; */
-    width: 50px;
-    height: 50px;
+    width: 66px;
+    bottom: 20px;
+    height: 66px;
     margin-top: -25px;
     background: white;
     border-radius: 50%;
@@ -32,14 +33,14 @@
 }
 
 .AttackBtn__AttackEnergy{
-    min-width: 40px;
-    min-height: 40px;
+    min-width: 55px;
+    min-height: 55px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 19px;
+    font-size: 20px;
     transform: translateX(0px);
     transition: transform 0.3s ease-in-out;
 }

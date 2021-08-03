@@ -1,6 +1,7 @@
 import { useStore } from "effector-react";
 import { useEffect, useState } from "react";
 import config from "../../../config";
+import { list2Matrix } from "../../../lib/array/list2Matrix";
 import { forEachObj } from "../../../lib/obj/forEachObj";
 import { $user } from "../../user/store";
 
@@ -28,6 +29,6 @@ export function useGameSetting() {
 
     return {
         reqSaveConfig,
-        inputs
+        inputs: list2Matrix(inputs, 2)
     }
 }

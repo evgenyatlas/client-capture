@@ -98,6 +98,30 @@ export class Game {
         socket.on('attack', this.onAttack)
         //Обновление энергии
         socket.on('updateEnergy', this.onUpdateEnergy)
+
+        //debug geojson
+        this.#map.addSource('debugGeoJSON', {
+            type: 'geojson',
+            data: null
+        })
+        this.#map.addLayer({
+            'id': 'debugGeoJSON',
+            'type': 'fill',
+            'source': 'debugGeoJSON',
+            'layout': {},
+            'paint': {
+                'fill-color': [
+                    "case",
+                    ["!=", ["get", "color"], null], ["get", "color"],
+                    "red"
+                ], // blue color fill
+                'fill-opacity': 0.5
+            }
+        }, 'country-label')
+        const debugGeoJSONSource = this.#map.getSource('debugGeoJSON')
+        socket.on('debugGeoJSON', ({ feature }) => {
+            debugGeoJSONSource.setData(feature)
+        })
     }
 
 

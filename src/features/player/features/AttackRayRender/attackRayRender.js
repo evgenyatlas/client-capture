@@ -1,5 +1,8 @@
 import { easeInCubic } from "../../../../lib/easing/easeInCubic"
+import { easeInExpo } from "../../../../lib/easing/easeInExpo"
+import { easeInSine } from "../../../../lib/easing/easeInSine"
 import { easeOutExpo } from "../../../../lib/easing/easeOutExpo"
+import { easeOutSine } from "../../../../lib/easing/easeOutSine"
 import { lerp } from "../../../../lib/easing/lerp"
 import { reverseEasingLoop } from "../../../../lib/easing/reverseEasingLoop"
 import { toRadians } from "../../../../lib/math/toRadians"
@@ -13,7 +16,8 @@ export class AttackRayRender {
         ATTACK: 2,
         TRANSITION_READY: 3
     }
-    static READY_SPEED_ROTATION = 700
+    static READY_SPEED_ROTATION = 1000
+    static ATTACK_SPEED = 300
     rotation
     #stage = AttackRayRender.STAGES.POINTER
     #readySetTime
@@ -109,7 +113,7 @@ export class AttackRayRender {
 
     #drawAttack = (ctx, position, color, map) => {
         let rotation = this.rotation.get() - map.getBearing()
-        const t = (performance.now() - this.#attackSetTime) / Player.ATACK_TIME
+        const t = (performance.now() - this.#attackSetTime) / AttackRayRender.ATTACK_SPEED
         const pos = reverseEasingLoop(0, Player.ATTACK_DISTANCE, t)
         const length = reverseEasingLoop(1, 1.5, t)
         const radius = reverseEasingLoop(1, 1.5, t)
@@ -123,7 +127,7 @@ export class AttackRayRender {
                 x: position.x + (Math.sin(toRadians(rotation)) * pos),
                 y: position.y - (Math.cos(toRadians(rotation)) * pos)
             },
-            length: Player.ATTACK_RAY_LENGTH * length,
+            length: Player.ATTACK_RAY_LENGTH,
             radius: Player.ATTACK_RAY_RADIUS * (radius < 1 ? 1 : radius),
             width: Player.ATTACK_RAY_HEIGHT,
             color: color

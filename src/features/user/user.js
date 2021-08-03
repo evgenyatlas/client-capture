@@ -6,7 +6,7 @@ import { Player } from "../player/player";
 import { easeOutElastic } from "../../lib/easing/easeOutElastic";
 import { easeOutBack } from "../../lib/easing/easeOutBack";
 
-const deferUnFreezeGeolocation = debounce(unFreezeGeolocation, Player.ATACK_TIME)
+const deferUnFreezeGeolocation = debounce(unFreezeGeolocation, Player.ATTACK_TIME)
 
 export class User {
     id = ''

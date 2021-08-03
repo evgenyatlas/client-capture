@@ -1,4 +1,3 @@
-import { useStore } from "effector-react"
 import { $userColor, $userEnergy } from "../../../../../user/store"
 import { $attackAvail, attackEv, $attackEnergy, $availAttack, setAttackEnergyEv } from "../../store"
 import './AttackBtn.css'
@@ -12,23 +11,21 @@ export const AttackBtn = memo(function AttackBtn() {
     useEffect(() => {
         if (!ref.current) return
         let unSubs = []
-        let energy = 0
         let select = false
         const attackBtnElm = ref.current
         const attackEnergyElm = ref.current.children[0]
         attackEnergyElm.style.background = $userColor.getState()
-        attackEnergyElm.innerText = energy
+        attackEnergyElm.innerText = $attackEnergy.getState()
 
-        const setEnergy = throttle(() => {
+        const heightElm = ref.current.clientHeight
+        const setTranslateY = (y) => ref.current.style.transform = `translateY(-${(y - heightElm)}px)`
+        const setDefaultTranslateY = () => ref.current.style.transform = `translateY(0px)`
+
+        const setEnergy = throttle((energy) => {
             energy = Math.max(Math.min($userEnergy.getState() - 1, energy), 0)
             setAttackEnergyEv(energy)
             attackEnergyElm.innerText = energy
         }, 100)
-
-        const attack = () => {
-            if (!$availAttack.getState() || select) return
-            attackEv(energy)
-        }
 
         const onTouchMove = (e) => {
             let clientY = e.touches[0].clientY
@@ -37,20 +34,20 @@ export const AttackBtn = memo(function AttackBtn() {
             if (clientY > maxY)
                 clientY = maxY
             const factorEnergy = ((clientY - maxY + 40) / (minY - maxY + 80))
-            energy = Math.round($userEnergy.getState() * factorEnergy)
-            setEnergy(energy)
+            setEnergy(Math.round($userEnergy.getState() * factorEnergy))
             select = true
-            attackBtnElm.style.transform = `translateY(${clientY}px)`
+            setTranslateY(window.innerHeight - clientY)
             attackBtnElm.classList.add('AttackBtn_drag')
         }
 
         const onTouchEnd = () => {
+            const energy = $attackEnergy.getState()
             if (energy) {
                 attackEv(energy)
             }
             setEnergy(0)
             attackBtnElm.classList.remove('AttackBtn_drag')
-            attackBtnElm.style.transform = `translateY(${maxY}px)`
+            setDefaultTranslateY()
             setTimeout(() => select = false, 10)
         }
 
@@ -64,15 +61,13 @@ export const AttackBtn = memo(function AttackBtn() {
         }
 
         unSubs.push($availAttack.watch(setAvail).unsubscribe)
-        unSubs.push($userEnergy.watch(setEnergy).unsubscribe)
 
         attackBtnElm.addEventListener('touchmove', onTouchMove)
         unSubs.push(() => attackBtnElm.removeEventListener('touchmove', onTouchEnd))
         attackBtnElm.addEventListener('touchend', onTouchEnd)
         unSubs.push(() => attackBtnElm.removeEventListener('touchend', onTouchEnd))
-        // attackBtnElm.addEventListener('click', attack)
-        // unSubs.push(() => attackBtnElm.removeEventListener('click', attack))
 
+        setDefaultTranslateY()
 
         return () => {
             unSubs.forEach(unSub => unSub())
@@ -82,8 +77,7 @@ export const AttackBtn = memo(function AttackBtn() {
     return (
         <button
             ref={ref}
-            className={`AttackBtn`}
-            style={{ transform: `translateY(${maxY}px)` }}
+            className="AttackBtn"
         >
             <div className="AttackBtn__AttackEnergy">
             </div>

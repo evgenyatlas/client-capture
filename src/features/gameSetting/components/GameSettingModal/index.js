@@ -2,6 +2,8 @@ import { Button, FormItem, FormLayoutGroup, Input, ModalCard, Separator, SliderS
 import { useGameSetting } from "../../hooks/useGameSetting"
 import { SelectFPS } from "./SelectFPS"
 
+import './GameSettingModal.css'
+
 export function GameSettingModal(props) {
     const { reqSaveConfig, inputs } = useGameSetting()
     return (
@@ -13,10 +15,15 @@ export function GameSettingModal(props) {
             <SelectFPS />
             <Separator style={{ marginTop: '5px', marginBottom: '10px' }}></Separator>
             {
-                inputs.map(({ onChange, value, name }) =>
-                    <FormItem top={name} key={name} className="clearPaddingVertical">
-                        <Input onChange={onChange} value={value} />
-                    </FormItem>
+                inputs.map(inputs =>
+                    <FormLayoutGroup mode="horizontal">
+                        {inputs.map(({ onChange, value, name }) =>
+                            <FormItem top={name} key={name} className="clearPaddingVertical GameSettingInput">
+                                <Input className="GameSettingInput__Input" onChange={onChange} value={value} />
+                            </FormItem>
+                        )}
+                    </FormLayoutGroup>
+
                 )
             }
             <Button style={{ marginTop: '10px' }} onClick={reqSaveConfig} mode="commerce">ПЕРЕЗАГРУЗИТЬ СЕРВЕР</Button>

@@ -6,5 +6,5 @@ export function calcDistanceAttackPixel(attackDistanceMeters, avatarSize, map, f
         map.project(centerMap(map)).y
         -
         map.project(destination(centerMap(map), attackDistanceMeters, 0, { units: 'meters' }).geometry.coordinates).y
-    ) * factorPixel) - avatarSize
+    ) * factorPixel) - avatarSize / 2
 }

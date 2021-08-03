@@ -30,6 +30,6 @@ export const $attackEnergyStyle = $userColor.map(color => ({ background: color }
 //Делаем возможность атаки недоступной после атаки
 delay({
     source: attackEv,
-    timeout: Player.ATACK_TIME,
+    timeout: Player.ATTACK_TIME,
     target: setAvailAttackEv
 })

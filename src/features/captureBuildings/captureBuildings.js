@@ -5,17 +5,30 @@ import { SelectedBuilding } from './features/selectedBuilding/selectBuilding'
 import { CaptureAnim } from "./features/captureAnim/captureAnim"
 import { RenderBuildings } from "./features/renderBuildings/renderBuildings"
 
+const styleLine = {
+    "type": "line",
+    "paint": {
+        "line-width": 10,
+        "line-color": ['get', 'color'],
+
+    }
+}
+
+const styleFill = {
+    'type': 'fill',
+    'paint': {
+        'fill-color': ['get', 'color'],
+        // 'fill-width': 10,
+    }
+}
+
 export class CaptureBuildings {
     static MIN_CAPTURE_DISTANCE = 50
     static CAPTURE_TIME = 4000
     #layerStyle = {
         "id": 'capture',
         "source": 'capture',
-        'type': 'fill',
-        'paint': {
-            'fill-color': ['get', 'color'],
-            // 'fill-width': 10,
-        }
+        ...styleFill
     }
     #map = null
     #user = null

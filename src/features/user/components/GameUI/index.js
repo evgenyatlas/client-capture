@@ -15,7 +15,7 @@ export function GameUI() {
             <div className={`GameUI ${userDead ? 'GameUI_hidden' : ''}`}>
                 <AttackBtn />
                 <NumberEnergy />
-                <AttackEnergy />
+                {/* <AttackEnergy /> */}
             </div>
             <DeadNotice />
         </>

@@ -5,7 +5,9 @@ import { EasingValue } from "../../lib/canvas/easingValue"
 import { RGBA } from "../../lib/color/RGBA"
 import { loadImg } from "../../lib/dom/loadImg"
 import { easeOutQuint } from "../../lib/easing/easeOutQuint"
+import { distance2Pixel } from "../../lib/mapbox/distance2Pixel"
 import { forEachObj } from "../../lib/obj/forEachObj"
+import { AttackRayRender } from "./features/AttackRayRender/attackRayRender"
 import { calcDistanceAttackPixel } from "./lib/calcDistanceAttackPixel"
 import { createAttackRay } from "./lib/createAttackRay"
 import { createPositionEasing } from "./lib/createPositionEasing"
@@ -15,19 +17,24 @@ import { JellyAnim } from "./lib/jellyAnim"
 
 export class Player {
     static DEAD_COLOR = 'rgb(156, 156, 156, 0.81)'
+    //Размеры в метрах, которые будут преобразованы в пиксели (исходя из карты)
     //устанавливается из игрового конфига (приходит с сервера)
-    static ATTACK_DISTANCE
+    static ATTACK_DISTANCE = 0
+    //устанавливается из игрового конфига (приходит с сервера)
     static AVATAR_SIZE = {
-        width: 30,
-        height: 30
+        width: 0,
+        height: 0
     }
-
-    static OUTLINE_RADIUS = 18.5
-    static ATTACK_RAY_RADIUS = 24.1
-    static ATTACK_RAY_HEIGHT = 4
+    //Рассчитывается исходя из AVATAR_SIZE * OUTLINE_RADIUS
+    static OUTLINE_RADIUS = 1.25
+    //Рассчитывается исходя из AVATAR_SIZE * ATTACK_RAY_RADIUS
+    static ATTACK_RAY_RADIUS = 1.66
+    //Рассчитывается исходя из AVATAR_SIZE * ATTACK_RAY_HEIGHT
+    static ATTACK_RAY_HEIGHT = 0.14
+    //Длина окружности в градусах
     static ATTACK_RAY_LENGTH = 110
 
-    static ATACK_TIME = 750
+    static ATTACK_TIME = 750
     static DURATION_MOVE = 800
     static DAMAGE_DURATION_MOVE = 400
     //Границы отрисовки
@@ -37,6 +44,7 @@ export class Player {
     )
     id = ''
     #rgbaManager
+    //Отрисовка луча атаки и указателя
     #attackRayRender
     //Цвет игрока
     color = ''
@@ -80,11 +88,17 @@ export class Player {
         this.colorOut = this.#rgbaManager.print(0.7)
         this.#position = createPositionEasing(position, Player.DURATION_MOVE)
         this.rotation = new EasingValue({ value: rotation, delay: 0, duration: 500 })
+        this.attackReady = attackReady
+        this.#attackRayRender = new AttackRayRender({
+            rotation: this.rotation,
+            attackDistance: Player.ATTACK_DISTANCE,
+            attackTime: Player.ATTACK_TIME,
+            stage: this.attackReady ? AttackRayRender.STAGES.ATTACK_READY : undefined
+        })
         this.#jellyAnim = new JellyAnim({ playerPosition: this.#position })
         this.energy = energy
         this.loadSource(avatar)
         this.dead = dead
-        this.attackReady = attackReady
     }
 
     //Загрузка ресурсов необходимых для отрисовки игрока
@@ -107,7 +121,7 @@ export class Player {
                 value: 0,
                 nextValue: 1,
                 delay: 300,
-                duration: Player.ATACK_TIME,
+                duration: Player.ATTACK_TIME,
                 endFn: () => {
                     this.#damagingList[damaging.id] = null
                     delete this.#damagingList[damaging.id]
@@ -136,10 +150,12 @@ export class Player {
     }
     switchAttackReady(turn) {
         this.attackReady = turn
+        this.#attackRayRender.setStage(turn ? AttackRayRender.STAGES.ATTACK_READY : AttackRayRender.STAGES.POINTER)
     }
     attack = (energy) => {
         this.energy -= energy
-        this.#attackRay.start()
+        this.#attackRayRender.setStage(AttackRayRender.STAGES.ATTACK)
+        // this.#attackRay.start()
     }
     //обновление энергии
     updateEnergy(energy) {
@@ -177,13 +193,13 @@ export class Player {
 
         const img = this.avatar
         /***Отрисовки****/
+        this.#attackRayRender.render(ctx, position, this.colorOut, map)
         //Атака
-        this.#attackRay.render(position)
+        //this.#attackRay.render(position)
         //запуск эффекта подергивания
         this.#jellyAnim.start(ctx, position)
         //Внешний круг
         this.drawOutline(ctx, factorPixel, position)
-        this.drawDirection(ctx, factorPixel, position, map)
         //Аватарка
         this.drawAvatar(ctx, position, img, Player.AVATAR_SIZE.width, Player.AVATAR_SIZE.height, map)
         //Смерть 
@@ -207,19 +223,6 @@ export class Player {
         )
         ctx.fillStyle = this.colorOut
         ctx.fill()
-    }
-    drawDirection(ctx, factorPixel, position, map) {
-        if (this.#attackRay.active) return
-        const rotation = this.rotation.get() - map.getBearing()
-        drawDirection({
-            ctx,
-            rotation,
-            position,
-            length: Player.ATTACK_RAY_LENGTH,
-            radius: Player.ATTACK_RAY_RADIUS,
-            width: Player.ATTACK_RAY_HEIGHT,
-            color: this.colorOut
-        })
     }
     drawAvatar(ctx, position, img, width, height, map) {
         ctx.drawImage(
@@ -258,17 +261,12 @@ export class Player {
     }
     //Статичный метод класса, для рассчета размеров (для отрисовки) в пикселях
     static calcPixel({ map, factorPixel }) {
-        Player.AVATAR_SIZE.width = Player.AVATAR_SIZE.width * factorPixel
-        Player.AVATAR_SIZE.height = Player.AVATAR_SIZE.height * factorPixel
-        Player.OUTLINE_RADIUS = Player.OUTLINE_RADIUS * factorPixel
-        Player.ATTACK_RAY_RADIUS = Player.ATTACK_RAY_RADIUS * factorPixel
-        Player.ATTACK_RAY_HEIGHT = Player.ATTACK_RAY_HEIGHT * factorPixel
-        Player.ATTACK_DISTANCE = calcDistanceAttackPixel(
-            config().GAME.ATTACK_DISTANCE,
-            Player.AVATAR_SIZE.width,
-            map,
-            factorPixel
-        )
+        const meterInPixel = distance2Pixel({ map, factorPixel, distance: 1 })
+        Player.AVATAR_SIZE.height = Player.AVATAR_SIZE.width = Math.round(config().GAME.PLAYER_WIDTH * meterInPixel)
+        Player.OUTLINE_RADIUS = Math.round(Player.AVATAR_SIZE.width / 2 * Player.OUTLINE_RADIUS)
+        Player.ATTACK_RAY_RADIUS = Math.round(Player.AVATAR_SIZE.width / 2 * Player.ATTACK_RAY_RADIUS)
+        Player.ATTACK_RAY_HEIGHT = Math.round(Player.ATTACK_RAY_HEIGHT * Player.AVATAR_SIZE.width)
+        Player.ATTACK_DISTANCE = Math.round(meterInPixel * config().GAME.ATTACK_DISTANCE - Player.AVATAR_SIZE.width)
     }
     //old
     // drawAttack(ctx, factorPixel, position, map) {
@@ -351,3 +349,5 @@ export class Player {
                     essential: true // this animation is considered essential with respect to prefers-reduced-motion
                 });
                 */
+
+window.Player = Player
