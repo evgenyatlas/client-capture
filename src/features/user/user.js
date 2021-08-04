@@ -5,15 +5,25 @@ import { debounce, throttle } from "@vkontakte/vkjs";
 import { Player } from "../player/player";
 import { easeOutElastic } from "../../lib/easing/easeOutElastic";
 import { easeOutBack } from "../../lib/easing/easeOutBack";
+import config from "../../config";
+import { ValueStore } from "../../lib/effectorKit/valueStore";
 
 const deferUnFreezeGeolocation = debounce(unFreezeGeolocation, Player.ATTACK_TIME)
 
 export class User {
+    static instance = null
+    static ATTACK_TIMEOUT
     id = ''
     player = null
     socket = null
+    energy
+    attackEnergy
+    #attackTimeout
+    #attackAvailTime = 0
     #map
-    constructor({ player, socket, map }) {
+    constructor({ player, socket, map, attackTimeout }) {
+
+        this.#attackTimeout = attackTimeout
         this.player = player
         this.#map = map
         this.socket = socket
@@ -32,7 +42,6 @@ export class User {
         this.#map.on('rotateZ', this.#rotate)
         //Устанавливаем начальный поворот в 0
         this.#rotate({ bearing: 0 })
-        this.player.user = true
     }
 
     //Метод обновления energy для UI
@@ -66,6 +75,10 @@ export class User {
     }
     //Атака
     #attack = (energy = 1) => {
+        //Если не прошло время для доступности атаки, то выходим
+        if (!this.#attackAvailTime || this.#attackAvailTime > performance.now()) return
+        //Очищаем время доступности атаки
+        this.#attackAvailTime = 0
         //Вызываем метод атаки нашего игрока
         this.player.attack(energy)
         //Обновляем UI
@@ -73,7 +86,9 @@ export class User {
         //Оповещаем сервер
         this.socket.emit('attack', energy)
     }
+    setAttackEnergy
     #switchAttackReady = (turn) => {
+        this.#attackAvailTime = turn ? performance.now() + this.#attackTimeout : 0
         this.player.switchAttackReady(turn)
         this.socket.emit('switchAttackReady', turn)
     }

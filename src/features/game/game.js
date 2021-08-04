@@ -1,6 +1,6 @@
 import { GameCanvas } from "../gameCanvas/gameCanvas"
 import { io } from 'socket.io-client'
-import config from "../../config"
+import config, { setGameConfig } from "../../config"
 import { Player } from "../player/player"
 import { CaptureBuildings } from '../captureBuildings/captureBuildings'
 import { forEachObj } from "../../lib/obj/forEachObj"
@@ -22,7 +22,7 @@ export class Game {
     #deadArea = null
     status = GAME_STATUSES.LOBBY
     startTime = 0
-    #user = null
+    user = null
     #map = null
 
     constructor({ map }) {
@@ -59,16 +59,16 @@ export class Game {
             this.status = data.status
             this.startTime = data.startTime
             //Записываем настройки в конфиг
-            config().GAME = { ...data.GAME, ...config().GAME }
+            setGameConfig(data.GAME)
             //Инициализируем canvas для отрисовки игрового процесса
             this.#gameCanvas.init()
             Player.calcPixel({ map: this.#map, factorPixel: this.#gameCanvas.factorPixel })
             //Создаем всех игроков полученных с сервера
             forEachObj(data.players, (playerId, player) => this.onAddPlayer(player))
             //Создаем пользователя (для работы с текущим игроком)
-            this.#user = new User({ player: this.#players[userId], socket, map: this.#map })
+            this.user = new User({ player: this.#players[userId], socket, map: this.#map, attackTimeout: data.GAME.ATTACK_TIMEOUT })
             //Инициализируем менеджер захвата строений
-            this.#captureBuilding.init({ user: this.#user, buildings: data.captureBuildings })
+            this.#captureBuilding.init({ user: this.user, buildings: data.captureBuildings })
 
         })
 
@@ -148,10 +148,10 @@ export class Game {
         const player = this.#players[playerId]
         player.energy += energy
         //Если это наш пользователь, то вызываем метод для обновления UI
-        if (this.#user.player.id === playerId) {
+        if (this.user.player.id === playerId) {
             //Синхронизация множителя энергии (если по какой-то причине данные с сервера не совпадают с клиентом)
             $userEnergyFactor.getState() !== energyFactor && setEnergyFactor(energyFactor)
-            this.#user.updateEnergy(energy)
+            this.user.updateEnergy(energy)
         }
     }
 
@@ -167,14 +167,14 @@ export class Game {
 
         //Если атакующий это игрок (а не игровой мир) и это не наш пользователь, то вызываем у игрока метод атаки
         //Проверка нашего пользователя, сделано по той причине, что у нашего пользователя и так вызывается метод атаки
-        if (this.#players[attacking.id] && attacking.id !== this.#user.player.id)
+        if (this.#players[attacking.id] && attacking.id !== this.user.player.id)
             this.#players[attacking.id].attack(attacking.attackEnergy)
 
         //проходимся по всем раненым игрокам, что бы отнять энергию и отрисовать эффекты урона
         damagePlayers.forEach(damagePlayer => {
             //Если это наш пользователь, то вызываем у user метод для обновления UI
-            if (this.#user.id === damagePlayer.id) {
-                this.#user.damage(-damagePlayer.energyDamage)
+            if (this.user.id === damagePlayer.id) {
+                this.user.damage(-damagePlayer.energyDamage)
             }
             //Наносим урон
             this.#players[damagePlayer.id]
@@ -216,4 +216,6 @@ export class Game {
         this.status = GAME_STATUSES.LAUNCHED
         this.startTime = startTime
     }
+
+
 }
