@@ -17,17 +17,25 @@ export class User {
     id = ''
     player = null
     socket = null
+    color
+    //доступная энергия
     energy
-    //Множитель энергии (т.е наша)
-    energyFactory
+    //Множитель энергии (т.е та которая добывается)
+    energyFactor
+    //Множитель для выбранной энергии атаки
+    attackEnergyFactor
+    //Выбранная энергия для атаки
     attackEnergy
+    dead
     #attackTimeout
     #attackAvailTime = 0
     #map
     constructor({ player, socket, map, attackTimeout }) {
-        this.energyFactor = new CounterValueStore({ value: 0 })
-        this.energyFactor.$store.watch(console.log)
-        this.attackEnergy = new ValueStore({ value: player.energy, observeObj: [player, 'energy'] })
+        this.color = new ValueStore({ value: player.color, observeObj: [player, 'color'] })
+        this.energy = new ValueStore({ value: player.energy, observeObj: [player, 'energy'] })
+        this.attackEnergyFactor =
+            this.energyFactor = new CounterValueStore({ value: 0, toFixed: 2 })
+        this.dead = this.energy.map(energy => energy <= 0)
         this.#attackTimeout = attackTimeout
         this.player = player
         this.#map = map
@@ -48,7 +56,9 @@ export class User {
         //Устанавливаем начальный поворот в 0
         this.#rotate({ bearing: 0 })
     }
+    setAttackEnergy(factor) {
 
+    }
     //Метод обновления energy для UI
     updateEnergy = (energy) => {
         updateEnergyEv(energy)
@@ -68,6 +78,7 @@ export class User {
         this.socket.emit('captureBuilding', data.building.getDataServer())
     }
     unCaptureBuilding = captureBuilding => {
+        this.energyFactor.dec(captureBuilding.energyFactor)
         updateEnergyFactorEv(-captureBuilding.energyFactor)
     }
     damage(energy) {
