@@ -150,7 +150,9 @@ export class Game {
         //Если это наш пользователь, то вызываем метод для обновления UI
         if (this.user.player.id === playerId) {
             //Синхронизация множителя энергии (если по какой-то причине данные с сервера не совпадают с клиентом)
+            //DELETE
             $userEnergyFactor.getState() !== energyFactor && setEnergyFactor(energyFactor)
+            this.user.energyFactor.get() !== energyFactor && this.user.energyFactor.set(energyFactor)
             this.user.updateEnergy(energy)
         }
     }

@@ -6,7 +6,8 @@ import { Player } from "../player/player";
 import { easeOutElastic } from "../../lib/easing/easeOutElastic";
 import { easeOutBack } from "../../lib/easing/easeOutBack";
 import config from "../../config";
-import { ValueStore } from "../../lib/effectorKit/valueStore";
+import { CounterValueStore, ValueStore } from "../../lib/effectorKit/valueStore";
+import { watchObj } from "../../lib/obj/watchObj";
 
 const deferUnFreezeGeolocation = debounce(unFreezeGeolocation, Player.ATTACK_TIME)
 
@@ -17,12 +18,16 @@ export class User {
     player = null
     socket = null
     energy
+    //Множитель энергии (т.е наша)
+    energyFactory
     attackEnergy
     #attackTimeout
     #attackAvailTime = 0
     #map
     constructor({ player, socket, map, attackTimeout }) {
-
+        this.energyFactor = new CounterValueStore({ value: 0 })
+        this.energyFactor.$store.watch(console.log)
+        this.attackEnergy = new ValueStore({ value: player.energy, observeObj: [player, 'energy'] })
         this.#attackTimeout = attackTimeout
         this.player = player
         this.#map = map
@@ -56,6 +61,8 @@ export class User {
     //Захват строения (вызывается как реакция на события из UI)
     #captureBuilding = (data) => {
         const energyCost = data.building.energyCost
+        this.energyFactor.inc(data.building.energyFactor)
+        //delete
         this.updateEnergy(-energyCost)
         this.player.updateEnergy(-energyCost)
         this.socket.emit('captureBuilding', data.building.getDataServer())
@@ -86,7 +93,6 @@ export class User {
         //Оповещаем сервер
         this.socket.emit('attack', energy)
     }
-    setAttackEnergy
     #switchAttackReady = (turn) => {
         this.#attackAvailTime = turn ? performance.now() + this.#attackTimeout : 0
         this.player.switchAttackReady(turn)

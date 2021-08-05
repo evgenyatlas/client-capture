@@ -1,5 +1,5 @@
 import { useStore } from "effector-react"
-import { AttackBtn } from "../../features/attackBtn/components/AttackBtn/newIndex.js"
+import { AttackBtn } from "../../features/attackBtn/components/AttackBtn/newIndex"
 import { AttackEnergy } from "../../features/AttackEnergy/index.js"
 import { DeadNotice } from "../../features/deadNotice/components/DeadNotice"
 import { NumberEnergy } from "../../features/numberEnergy/components/NumberEnergy"

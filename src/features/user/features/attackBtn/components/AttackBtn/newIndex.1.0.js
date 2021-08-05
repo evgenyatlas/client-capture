@@ -1,87 +1,67 @@
 import { useStore } from "effector-react"
 import { $userColor, $userEnergy } from "../../../../../user/store"
-import { $attackAvail, attackEv, $attackEnergy, $availAttack } from "../../store"
+import { $attackAvail, attackEv, $attackEnergy, $availAttack, $attackEnergyStyle, setAttackEnergyEv } from "../../store"
 import './AttackBtn.css'
-import { memo, useEffect, useRef, useState } from "react"
-import { throttle } from "@vkontakte/vkjs"
+import { useCallback, useMemo, useState, memo } from "react"
 
 const minY = window.innerHeight / 2
 const maxY = window.innerHeight - 40
-export const AttackBtn = memo(function AttackBtn() {
-    const ref = useRef()
-    useEffect(() => {
-        if (!ref.current) return
-        let unSubs = []
-        let energy = 1
-        let select = false
-        const attackBtnElm = ref.current
-        const attackEnergyElm = ref.current.children[0]
-        attackEnergyElm.style.background = $userColor.getState()
-        attackEnergyElm.innerText = energy
 
-        const setEnergy = throttle(() => {
-            energy = Math.max(Math.min($userEnergy.getState() - 1, energy), 1)
-            attackEnergyElm.innerText = energy
-        }, 70)
+const AttackEnergy = memo(function AttackEnergy({ color, attackEnergy }) {
+    return (
+        <div style={{ backgroundColor: color }} className="AttackBtn__AttackEnergy">
+            <span>{attackEnergy}</span>
+            <svg viewBox="0 0 36 36" className="circular-chart">
+                <path style={{ stroke: color }} className="circle"
+                    d="M18 2.0845
+a 15.9155 15.9155 0 0 1 0 31.831
+a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+            </svg>
+        </div>
+    )
+})
 
-        const attack = () => {
-            if (!$availAttack.getState() || select) return
+export function AttackBtn() {
+    const userEnergy = useStore($userEnergy)
+    const color = useStore($userColor)
+    const selectEnergy = useStore($attackEnergy)
+
+    const [posY, setPosY] = useState(0)
+
+    const onTouchMove = useCallback((e) => {
+        let clientY = e.touches[0].clientY
+        if (clientY < minY)
+            clientY = minY
+        if (clientY > maxY)
+            clientY = maxY
+        const factorEnergy = ((clientY - maxY + 40) / (minY - maxY + 80))
+        setAttackEnergyEv(Math.round($userEnergy.getState() * factorEnergy))
+        setPosY(window.innerHeight - clientY - 66)
+    }, [])
+
+    const onTouchEnd = useCallback((e) => {
+        let energy = $attackEnergy.getState()
+        energy = Math.max(Math.min($userEnergy - 1, selectEnergy), 0)
+        if (energy) {
             attackEv(energy)
         }
+        setAttackEnergyEv(0)
+        setPosY(0)
+    }, [])
 
-        const onTouchMove = (e) => {
-            let clientY = e.touches[0].clientY
-            if (clientY < minY)
-                clientY = minY
-            if (clientY > maxY)
-                clientY = maxY
-            const factorEnergy = ((clientY - maxY) / (minY - maxY + 80))
-            energy = Math.round($userEnergy.getState() * factorEnergy)
-            setEnergy(energy)
-            select = true
-            attackBtnElm.style.transform = `translateY(${clientY}px)`
-            attackBtnElm.classList.add('AttackBtn_drag')
-        }
-
-        const onTouchEnd = () => {
-            attackBtnElm.classList.remove('AttackBtn_drag')
-            attackBtnElm.style.transform = `translateY(${maxY}px)`
-            setTimeout(() => select = false, 10)
-        }
-
-        const setAvail = (avail) => {
-            if (avail && attackBtnElm.classList.contains('AttackBtn_disabled')) {
-                attackBtnElm.classList.remove('AttackBtn_disabled')
-            }
-            else if (!avail && !attackBtnElm.classList.contains('AttackBtn_disabled')) {
-                attackBtnElm.classList.add('AttackBtn_disabled')
-            }
-        }
-
-        unSubs.push($availAttack.watch(setAvail).unsubscribe)
-        unSubs.push($userEnergy.watch(setEnergy).unsubscribe)
-
-        attackBtnElm.addEventListener('touchmove', onTouchMove)
-        unSubs.push(() => attackBtnElm.removeEventListener('touchmove', onTouchEnd))
-        attackBtnElm.addEventListener('touchend', onTouchEnd)
-        unSubs.push(() => attackBtnElm.removeEventListener('touchend', onTouchEnd))
-        attackBtnElm.addEventListener('click', attack)
-        unSubs.push(() => attackBtnElm.removeEventListener('click', attack))
-
-
-        return () => {
-            unSubs.forEach(unSub => unSub())
-        }
-    }, [ref.current])
+    //Что бы выбранная энергия не ушла в 0 и не была больше текущей - 1
+    const attackEnergy = Math.max(Math.min(userEnergy - 1, selectEnergy), 0)
 
     return (
         <button
-            ref={ref}
-            className={`AttackBtn`}
-            style={{ transform: `translateY(${maxY}px)` }}
+            className={`AttackBtn ${attackEnergy && posY ? 'AttackBtn_drag' : ''}`}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+            style={{ transform: `translateY(-${posY}px)` }}
         >
-            <div className="AttackBtn__AttackEnergy">
-            </div>
+            <AttackEnergy color={color} attackEnergy={attackEnergy} />
         </button>
     )
-})
+}
+

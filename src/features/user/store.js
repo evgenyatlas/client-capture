@@ -15,7 +15,7 @@ export const captureBuildingUserEv = captureBuildingEv.filter({
 
 export const $user = createStore({})
 export const $userId = $user.map(({ player }) => player ? player.id : '')
-export const $userColor = $user.map(({ player }) => player ? rgb2hex(player.color) : undefined)
+export const $userColor = $user.map(({ player }) => player ? player.color : undefined)
 export const $userEnergy = $user.map(({ player }) => player ? player.energy : 1)
 export const $userEnergyFactor = $user.map(({ player }) => player ? player.energyFactor : 0)
 export const $userDead = $userEnergy.map(energy => energy <= 0)

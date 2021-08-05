@@ -3,24 +3,32 @@ import { $attackAvail, attackEv, $attackEnergy, $availAttack, setAttackEnergyEv 
 import './AttackBtn.css'
 import { memo, useEffect, useRef, useState } from "react"
 import { throttle } from "@vkontakte/vkjs"
+import { useStore } from "effector-react"
+import config from "../../../../../../config"
 
 const minY = window.innerHeight / 2
 const maxY = window.innerHeight - 40
 export const AttackBtn = memo(function AttackBtn() {
     const ref = useRef()
+    const color = useStore($userColor)
     useEffect(() => {
         if (!ref.current) return
+        //Высота элемента
+        const heightElm = ref.current.clientHeight
+        //Массив для подписок которые отчистим при unmount
         let unSubs = []
-        let select = false
+        //Контейнер для самого элемента
         const attackBtnElm = ref.current
-        const attackEnergyElm = ref.current.children[0]
-        attackEnergyElm.style.background = $userColor.getState()
+        //Отображения значения
+        const attackEnergyElm = ref.current.children[0].children[0]
+        //Ставим начальное значения 
         attackEnergyElm.innerText = $attackEnergy.getState()
 
-        const heightElm = ref.current.clientHeight
-        const setTranslateY = (y) => ref.current.style.transform = `translateY(-${(y - heightElm)}px)`
-        const setDefaultTranslateY = () => ref.current.style.transform = `translateY(0px)`
+        //Функции для установки позиции
+        const setPos = (y) => ref.current.style.transform = `translateY(-${(y - heightElm)}px)`
+        const setDefaultPos = () => ref.current.style.transform = `translateY(0px)`
 
+        //Установка выбранной энергии
         const setEnergy = throttle((energy) => {
             energy = Math.max(Math.min($userEnergy.getState() - 1, energy), 0)
             setAttackEnergyEv(energy)
@@ -35,9 +43,8 @@ export const AttackBtn = memo(function AttackBtn() {
                 clientY = maxY
             const factorEnergy = ((clientY - maxY + 40) / (minY - maxY + 80))
             setEnergy(Math.round($userEnergy.getState() * factorEnergy))
-            select = true
-            setTranslateY(window.innerHeight - clientY)
             attackBtnElm.classList.add('AttackBtn_drag')
+            setPos(window.innerHeight - clientY)
         }
 
         const onTouchEnd = () => {
@@ -47,31 +54,22 @@ export const AttackBtn = memo(function AttackBtn() {
             }
             setEnergy(0)
             attackBtnElm.classList.remove('AttackBtn_drag')
-            setDefaultTranslateY()
-            setTimeout(() => select = false, 10)
+            setDefaultPos()
         }
-
-        const setAvail = (avail) => {
-            if (avail && attackBtnElm.classList.contains('AttackBtn_disabled')) {
-                attackBtnElm.classList.remove('AttackBtn_disabled')
-            }
-            else if (!avail && !attackBtnElm.classList.contains('AttackBtn_disabled')) {
-                attackBtnElm.classList.add('AttackBtn_disabled')
-            }
-        }
-
-        unSubs.push($availAttack.watch(setAvail).unsubscribe)
 
         attackBtnElm.addEventListener('touchmove', onTouchMove)
-        unSubs.push(() => attackBtnElm.removeEventListener('touchmove', onTouchEnd))
         attackBtnElm.addEventListener('touchend', onTouchEnd)
+
+        unSubs.push(() => attackBtnElm.removeEventListener('touchmove', onTouchEnd))
         unSubs.push(() => attackBtnElm.removeEventListener('touchend', onTouchEnd))
 
-        setDefaultTranslateY()
+        setDefaultPos()
 
+        //Очищаем подписки при unmount
         return () => {
             unSubs.forEach(unSub => unSub())
         }
+
     }, [ref.current])
 
     return (
@@ -79,7 +77,15 @@ export const AttackBtn = memo(function AttackBtn() {
             ref={ref}
             className="AttackBtn"
         >
-            <div className="AttackBtn__AttackEnergy">
+            <div style={{ backgroundColor: color }} className="AttackBtn__AttackEnergy">
+                <span>0</span>
+                <svg viewBox="0 0 36 36" className="circular-chart">
+                    <path style={{ stroke: color }} className="circle"
+                        d="M18 2.0845
+      a 15.9155 15.9155 0 0 1 0 31.831
+      a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                </svg>
             </div>
         </button>
     )

@@ -57,8 +57,6 @@ export class Player {
     get position() {
         return this.#position.get()
     }
-    //(EasingValue) Окружности атаки
-    #attackRay
     //(EeasingValue) Словарь в котором храняться обьекты для отрисовки ранения
     #damagingList = {}
     #jellyAnim
@@ -155,7 +153,6 @@ export class Player {
     attack = (energy) => {
         this.energy -= energy
         this.#attackRayRender.setStage(AttackRayRender.STAGES.ATTACK)
-        // this.#attackRay.start()
     }
     //обновление энергии
     updateEnergy(energy) {
@@ -168,17 +165,6 @@ export class Player {
     }
     initRender({ ctx, map, factorPixel }) {
 
-        this.#attackRay = createAttackRay({
-            attackDistance: Player.ATTACK_DISTANCE,
-            ctx,
-            position: this.position,
-            rotation: this.rotation,
-            map,
-            length: Player.ATTACK_RAY_LENGTH,
-            radius: Player.ATTACK_RAY_RADIUS,
-            width: Player.ATTACK_RAY_HEIGHT,
-            color: this.colorOut
-        })
     }
     //Метод для отрисовки canvas
     render({ ctx, map, factorPixel }) {
@@ -195,7 +181,6 @@ export class Player {
         /***Отрисовки****/
         this.#attackRayRender.render(ctx, position, this.colorOut, map)
         //Атака
-        //this.#attackRay.render(position)
         //запуск эффекта подергивания
         this.#jellyAnim.start(ctx, position)
         //Внешний круг
