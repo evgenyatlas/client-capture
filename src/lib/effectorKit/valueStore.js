@@ -8,6 +8,7 @@ import createInputStore from "./createInputStore";
 export class ValueStore {
     $store
     constructor({ value, observeObj, readOnly = false, combine }) {
+
         //Создаем store для хранения значения
         const { $store, set } = createInputStore(
             //Если передан обьект за которым наблюдаем, то записываем его значение в store
