@@ -1,5 +1,4 @@
-import { $userColor, $userEnergy } from "../../../../../user/store"
-import { $attackAvail, attackEv, $attackEnergy, $availAttack, setAttackEnergyEv } from "../../store"
+
 import './AttackBtn.css'
 import { memo, useEffect, useRef, useState } from "react"
 import { throttle } from "@vkontakte/vkjs"
@@ -25,18 +24,16 @@ export const AttackBtn = memo(function AttackBtn() {
         //Отображения значения
         const attackEnergyElm = ref.current.children[0].children[0]
         //Ставим начальное значения 
-        attackEnergyElm.innerText = $attackEnergy.getState()
+        attackEnergyElm.innerText = user.attackEnergy.get()
 
         //Функции для установки позиции
         const setPos = (y) => ref.current.style.transform = `translateY(-${(y - heightElm)}px)`
         const setDefaultPos = () => ref.current.style.transform = `translateY(0px)`
 
         //Установка выбранной энергии
-        const setEnergy = throttle((energy) => {
-            energy = Math.max(Math.min(user.energy.get() - 1, energy), 0)
-            setAttackEnergyEv(energy)
-            attackEnergyElm.innerText = energy
-        }, 100)
+        const setEnergy = throttle((energy) => user.setAttackEnergy(energy), 100)
+
+        user.attackEnergy.$store.watch(attackEnergy => attackEnergyElm.innerText = attackEnergy)
 
         const onTouchMove = (e) => {
             let clientY = e.touches[0].clientY
@@ -45,18 +42,13 @@ export const AttackBtn = memo(function AttackBtn() {
             if (clientY > maxY)
                 clientY = maxY
             const factorEnergy = ((clientY - maxY + 40) / (minY - maxY + 80))
-            user.setAttackEnergy(factorEnergy)
-            setEnergy(Math.round(user.energy.get() * factorEnergy))
+            setEnergy(factorEnergy)
             attackBtnElm.classList.add('AttackBtn_drag')
             setPos(window.innerHeight - clientY)
         }
 
         const onTouchEnd = () => {
-            const energy = $attackEnergy.getState()
-            if (energy) {
-                attackEv(energy)
-            }
-            setEnergy(0)
+            user.attack()
             attackBtnElm.classList.remove('AttackBtn_drag')
             setDefaultPos()
         }

@@ -1,4 +1,3 @@
-import { attackEv } from "../user/features/attackBtn/store";
 import { $smothCoords, freezeGeolocation, unFreezeGeolocation } from "../geolocation/store";
 import { captureBuildingUserEv, setUserEv, updateEnergyEv, updateEnergyFactorEv } from "./store";
 import { debounce, throttle } from "@vkontakte/vkjs";
@@ -19,6 +18,7 @@ export class User {
     id = ''
     player = null
     socket = null
+    #captureBuildings
     color
     //доступная энергия
     energy
@@ -32,7 +32,7 @@ export class User {
     #attackTimeout
     #attackAvailTime = 0
     #map
-    constructor({ player, socket, map, attackTimeout }) {
+    constructor({ player, socket, map, attackTimeout, captureBuildings }) {
         this.color = new ValueStore({
             observeObj: [player, 'color'],
             readOnly: true
@@ -58,6 +58,7 @@ export class User {
         this.energy.$store.watch(energy => console.log(energy, ' energy'))
         this.attackEnergy.$store.watch((attackEnergy) => console.log(attackEnergy, ' attackEnergy'))
 
+        this.#captureBuildings = captureBuildings
         this.dead = this.energy.map(energy => energy <= 0)
         this.#attackTimeout = attackTimeout
         this.player = player
@@ -70,8 +71,6 @@ export class User {
         $smothCoords.watch(this.#changePosition)
         //Реакция на события (из UI) захвата строения
         captureBuildingUserEv.watch(this.#captureBuilding)
-        //Реакция на события (из UI) атаки
-        attackEv.watch(this.attack)
         //Переключения готовности к атаке
         this.attackReady.$store.watch(this.#switchAttackReady)
         //Поворот персонажа
@@ -116,17 +115,21 @@ export class User {
         this.socket.emit('rotate', -bearing)
     }
     //Атака
-    attack = (energy = 1) => {
+    attack = () => {
+        //Энергия для атаки
+        const attackEnergy = this.attackEnergy.get()
         //Если не прошло время для доступности атаки, то выходим
-        if (!this.#attackAvailTime || this.#attackAvailTime > performance.now()) return
+        if (!attackEnergy || !this.#attackAvailTime || this.#attackAvailTime > performance.now()) return
+        //Устанавливаем выбранную энергию в 0
+        this.attackEnergy.set(0)
         //Очищаем время доступности атаки
         this.#attackAvailTime = 0
         //Вызываем метод атаки нашего игрока
-        this.player.attack(energy)
+        this.player.attack(attackEnergy)
         //Обновляем UI
-        this.updateEnergy(-energy)
+        this.updateEnergy(-attackEnergy)
         //Оповещаем сервер
-        this.socket.emit('attack', energy)
+        this.socket.emit('attack', attackEnergy)
     }
     #switchAttackReady = (turn) => {
         this.#attackAvailTime = turn ? performance.now() + this.#attackTimeout : 0
