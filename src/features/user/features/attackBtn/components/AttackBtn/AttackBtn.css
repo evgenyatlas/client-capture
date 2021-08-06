@@ -53,7 +53,6 @@
     width: 75px;
     position: absolute;
     top:-20px;
-    visibility: hidden;
   }
 
   .AttackBtn_drag .circular-chart {

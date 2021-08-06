@@ -52,75 +52,79 @@ export class Game {
 
         const userId = userData.id
 
-        //Подписываемся на события передачи начальных данных
-        socket.on('init', (data) => {
+        //Дожидаемся загрузки
+        await new Promise((res, rej) => {
+            //Подписываемся на события передачи начальных данных
+            socket.on('init', (data) => {
 
-            // this.mySocket = socket
-            this.status = data.status
-            this.startTime = data.startTime
-            //Записываем настройки в конфиг
-            setGameConfig(data.GAME)
-            //Инициализируем canvas для отрисовки игрового процесса
-            this.#gameCanvas.init()
-            Player.calcPixel({ map: this.#map, factorPixel: this.#gameCanvas.factorPixel })
-            //Создаем всех игроков полученных с сервера
-            forEachObj(data.players, (playerId, player) => this.onAddPlayer(player))
-            //Создаем пользователя (для работы с текущим игроком)
-            this.user = new User({ player: this.#players[userId], socket, map: this.#map, attackTimeout: data.GAME.ATTACK_TIMEOUT })
-            //Инициализируем менеджер захвата строений
-            this.#captureBuilding.init({ user: this.user, buildings: data.captureBuildings })
+                // this.mySocket = socket
+                this.status = data.status
+                this.startTime = data.startTime
+                //Записываем настройки в конфиг
+                setGameConfig(data.GAME)
+                //Инициализируем canvas для отрисовки игрового процесса
+                this.#gameCanvas.init()
+                Player.calcPixel({ map: this.#map, factorPixel: this.#gameCanvas.factorPixel })
+                //Создаем всех игроков полученных с сервера
+                forEachObj(data.players, (playerId, player) => this.onAddPlayer(player))
+                //Создаем пользователя (для работы с текущим игроком)
+                this.user = new User({ player: this.#players[userId], socket, map: this.#map, attackTimeout: data.GAME.ATTACK_TIMEOUT })
+                //Инициализируем менеджер захвата строений
+                this.#captureBuilding.init({ user: this.user, buildings: data.captureBuildings })
 
-        })
+                res()
+            })
 
-        //Обновляем страницу, при отключение от сервера (почему бы и нет...)
-        socket.on('disconnect', (e) => {
-            window.location.reload()
-        })
+            //Обновляем страницу, при отключение от сервера (почему бы и нет...)
+            socket.on('disconnect', (e) => {
+                window.location.reload()
+            })
 
-        /*ПОДПИСКИ НА СОБЫТИЯ С СЕРВЕРА*/
-        //Старт игры
-        socket.on('startGame', this.startGame)
-        //Добавление новых игроков
-        socket.on('addPlayer', this.onAddPlayer)
-        //Выход игроков
-        socket.on('removePlayer', this.onRemovePlayer)
-        //Смена позиции игроков
-        socket.on('changePosition', this.onChangePositon)
-        //Поворот игроков
-        socket.on('rotate', this.onRotate)
-        //Захвата строений
-        socket.on('captureBuilding', this.onCaptureBuilding)
-        //Область смерти
-        socket.on('deadArea', this.onDeadArea)
-        //Установка готовности атаки
-        socket.on('switchAttackReady', this.switchAttackReady)
-        //Атак игроков
-        socket.on('attack', this.onAttack)
-        //Обновление энергии
-        socket.on('updateEnergy', this.onUpdateEnergy)
+            /*ПОДПИСКИ НА СОБЫТИЯ С СЕРВЕРА*/
+            //Старт игры
+            socket.on('startGame', this.startGame)
+            //Добавление новых игроков
+            socket.on('addPlayer', this.onAddPlayer)
+            //Выход игроков
+            socket.on('removePlayer', this.onRemovePlayer)
+            //Смена позиции игроков
+            socket.on('changePosition', this.onChangePositon)
+            //Поворот игроков
+            socket.on('rotate', this.onRotate)
+            //Захвата строений
+            socket.on('captureBuilding', this.onCaptureBuilding)
+            //Область смерти
+            socket.on('deadArea', this.onDeadArea)
+            //Установка готовности атаки
+            socket.on('switchAttackReady', this.switchAttackReady)
+            //Атак игроков
+            socket.on('attack', this.onAttack)
+            //Обновление энергии
+            socket.on('updateEnergy', this.onUpdateEnergy)
 
-        //debug geojson
-        this.#map.addSource('debugGeoJSON', {
-            type: 'geojson',
-            data: null
-        })
-        this.#map.addLayer({
-            'id': 'debugGeoJSON',
-            'type': 'fill',
-            'source': 'debugGeoJSON',
-            'layout': {},
-            'paint': {
-                'fill-color': [
-                    "case",
-                    ["!=", ["get", "color"], null], ["get", "color"],
-                    "red"
-                ], // blue color fill
-                'fill-opacity': 0.5
-            }
-        }, 'country-label')
-        const debugGeoJSONSource = this.#map.getSource('debugGeoJSON')
-        socket.on('debugGeoJSON', ({ feature }) => {
-            debugGeoJSONSource.setData(feature)
+            //debug geojson
+            this.#map.addSource('debugGeoJSON', {
+                type: 'geojson',
+                data: null
+            })
+            this.#map.addLayer({
+                'id': 'debugGeoJSON',
+                'type': 'fill',
+                'source': 'debugGeoJSON',
+                'layout': {},
+                'paint': {
+                    'fill-color': [
+                        "case",
+                        ["!=", ["get", "color"], null], ["get", "color"],
+                        "red"
+                    ], // blue color fill
+                    'fill-opacity': 0.5
+                }
+            }, 'country-label')
+            const debugGeoJSONSource = this.#map.getSource('debugGeoJSON')
+            socket.on('debugGeoJSON', ({ feature }) => {
+                debugGeoJSONSource.setData(feature)
+            })
         })
     }
 

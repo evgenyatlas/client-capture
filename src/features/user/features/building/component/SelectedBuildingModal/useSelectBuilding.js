@@ -2,12 +2,13 @@ import { useStore } from "effector-react"
 import { pointToPolygonDistance } from "../../../../../../lib/geo/pointToPolygonDistance"
 import { CaptureBuildings } from "../../../../../captureBuildings/captureBuildings"
 import { $selectedBuilding } from "../../../../../captureBuildings/store"
-import { $geolocationCoords, $smothCoords } from "../../../../../geolocation/store"
-import { $userEnergy, $userId } from "../../../../store"
+import { $smothCoords } from "../../../../../geolocation/store"
+import { useEnergy } from "../../../../hooks/useEnergy"
+import { $userId } from "../../../../store"
 
 export function useSelectBuilding() {
     const userId = useStore($userId)
-    const energy = useStore($userEnergy)
+    const energy = useEnergy()
     const currCoords = useStore($smothCoords)
     const selectBuilding = useStore($selectedBuilding)
     let notAvailable = ''

@@ -4,12 +4,15 @@ import { useState } from 'react'
 import { EnergyIcon } from '../../../../../../components/EnergyIcon'
 import config from '../../../../../../config'
 import { $userColor, $userEnergy, $userEnergyFactor } from '../../../../../user/store'
+import { useColor } from '../../../../hooks/useColor'
+import { useEnergy } from '../../../../hooks/useEnergy'
+import { useEnergyFactor } from '../../../../hooks/useEnergyFactor'
 import './NumberEnergy.css'
 
 export function NumberEnergy() {
-    const energy = useStore($userEnergy)
-    const energyFactor = useStore($userEnergyFactor)
-    const color = useStore($userColor)
+    const energy = useEnergy()
+    const energyFactor = useEnergyFactor()
+    const color = useColor()
     return (
         <div className={cn("NumberEnergy", `NumberEnergy_color-${color}`)}>
             <div className="NumberEnergy__Head"></div>

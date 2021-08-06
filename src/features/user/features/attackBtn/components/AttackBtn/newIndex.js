@@ -5,12 +5,15 @@ import { memo, useEffect, useRef, useState } from "react"
 import { throttle } from "@vkontakte/vkjs"
 import { useStore } from "effector-react"
 import config from "../../../../../../config"
+import { useColor } from "../../../../hooks/useColor"
+import { useUser } from "../../../../hooks/useUser"
 
 const minY = window.innerHeight / 2
 const maxY = window.innerHeight - 40
 export const AttackBtn = memo(function AttackBtn() {
     const ref = useRef()
-    const color = useStore($userColor)
+    const color = useColor()
+    const user = useUser()
     useEffect(() => {
         if (!ref.current) return
         //Высота элемента
@@ -30,7 +33,7 @@ export const AttackBtn = memo(function AttackBtn() {
 
         //Установка выбранной энергии
         const setEnergy = throttle((energy) => {
-            energy = Math.max(Math.min($userEnergy.getState() - 1, energy), 0)
+            energy = Math.max(Math.min(user.energy.get() - 1, energy), 0)
             setAttackEnergyEv(energy)
             attackEnergyElm.innerText = energy
         }, 100)
@@ -42,7 +45,8 @@ export const AttackBtn = memo(function AttackBtn() {
             if (clientY > maxY)
                 clientY = maxY
             const factorEnergy = ((clientY - maxY + 40) / (minY - maxY + 80))
-            setEnergy(Math.round($userEnergy.getState() * factorEnergy))
+            user.setAttackEnergy(factorEnergy)
+            setEnergy(Math.round(user.energy.get() * factorEnergy))
             attackBtnElm.classList.add('AttackBtn_drag')
             setPos(window.innerHeight - clientY)
         }

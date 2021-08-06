@@ -32,6 +32,7 @@ function setCSSVar() {
     CONFIG.GAME.CSS_VARIABLES.forEach((name) => {
         root.style.setProperty(`--${name}`, typeof CONFIG.GAME[name] === 'number' ? `${CONFIG.GAME[name]}ms` : CONFIG.GAME[name])
     })
+    delete CONFIG.GAME.CSS_VARIABLES
 }
 
 export function setGameConfig(game) {

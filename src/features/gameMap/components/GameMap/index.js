@@ -1,12 +1,13 @@
 import { useStore } from "effector-react";
+import { memo } from "react";
 import config from "../../../../config";
 import { ReactMapbox } from "../../../../lib/react-mapbox/components/ReactMapbox";
 import { $readyGeolocation, $smothCoords } from "../../../geolocation/store";
 import { changeGameMap } from "../../store";
 
-export function GameMap() {
+
+export const GameMap = memo(function GameMap() {
     const ready = useStore($readyGeolocation)
-    console.log(ready)
     return (
         ready ? <ReactMapbox
             onLoad={changeGameMap}
@@ -25,4 +26,4 @@ export function GameMap() {
         /> :
             null
     )
-}
+})

@@ -3,11 +3,12 @@ import { $userColor, $userEnergy } from "../../../../../user/store"
 import { $attackAvail, attackEv, $attackEnergy, $availAttack, $attackEnergyStyle } from "../../store"
 import './AttackBtn.css'
 import { useCallback, useMemo, useState } from "react"
+import { useEnergy } from "../../../../hooks/useEnergy"
 
 const minY = window.innerHeight / 2
 const maxY = window.innerHeight - 40
 export function AttackBtn() {
-    const userEnergy = useStore($userEnergy)
+    const userEnergy = useEnergy()
     const avail = useStore($availAttack)
 
     const [posY, setPosY] = useState(0)

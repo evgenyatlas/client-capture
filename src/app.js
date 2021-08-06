@@ -17,9 +17,6 @@ async function createApp() {
 
 	async function init() {
 		await initGeolocation()
-		const map = await initGameMap()
-		const game = new Game({ map })
-		game.init()
 	}
 
 	const App = () => {
@@ -39,7 +36,7 @@ async function createApp() {
 		return (
 			<AdaptivityProvider>
 				<AppRoot>
-					<Root activeView="pageMap" modal={<Modals />}>
+					<Root activeView="pageMap" >
 						<PageGameMap id="pageMap" />
 					</Root>
 				</AppRoot>
