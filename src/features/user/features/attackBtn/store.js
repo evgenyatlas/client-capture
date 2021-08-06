@@ -17,6 +17,5 @@ export const $attackEnergy = createStore(0)
 $attackEnergy.on(throttle({ source: setAttackEnergyEv, timeout: 100 }), setPayload)
 
 // export const { $store: $attackReady, on: enableAttackReady, off: disableAttackReady } = createSwitchStore(false)
-export const $attackReady = $attackEnergy.map(energy => energy > 0)
 export const $attackEnergyStyle = $userColor.map(color => ({ background: color }))
 

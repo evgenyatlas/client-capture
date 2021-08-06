@@ -1,4 +1,4 @@
-import { $attackReady, attackEv } from "../user/features/attackBtn/store";
+import { attackEv } from "../user/features/attackBtn/store";
 import { $smothCoords, freezeGeolocation, unFreezeGeolocation } from "../geolocation/store";
 import { captureBuildingUserEv, setUserEv, updateEnergyEv, updateEnergyFactorEv } from "./store";
 import { debounce, throttle } from "@vkontakte/vkjs";
@@ -26,6 +26,8 @@ export class User {
     energyFactor
     //Выбранная энергия для атаки
     attackEnergy
+    //Готовность к атаке
+    attackReady
     dead
     #attackTimeout
     #attackAvailTime = 0
@@ -49,6 +51,7 @@ export class User {
                 fn: (attackEnergyFactor, energy) => Math.max(Math.min(Math.round(energy * attackEnergyFactor) - 1, energy - 1), 0)
             }
         })
+        this.attackReady = this.attackEnergy.map(attackEnergy => attackEnergy > 0)
 
         this.color.$store.watch((color) => console.log(color, ' color'))
         this.energyFactor.$store.watch((energyFactor) => console.log(energyFactor, ' energyFactor'))
@@ -70,7 +73,7 @@ export class User {
         //Реакция на события (из UI) атаки
         attackEv.watch(this.attack)
         //Переключения готовности к атаке
-        $attackReady.watch(this.#switchAttackReady)
+        this.attackReady.$store.watch(this.#switchAttackReady)
         //Поворот персонажа
         this.#map.on('rotateZ', this.#rotate)
         //Устанавливаем начальный поворот в 0
