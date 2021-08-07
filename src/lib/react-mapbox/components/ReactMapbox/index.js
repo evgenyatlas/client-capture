@@ -4,6 +4,7 @@ import { useSwipeable } from "react-swipeable";
 import config from "../../../../config";
 import { $smothCoords } from "../../../../features/geolocation/store";
 import { rotateMap } from "../../../mapbox/rotateMap";
+import { addClickHandler } from "../../lib/addClickHandler";
 //fix build
 mapboxgl.workerClass = require("worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker").default;
 
@@ -16,7 +17,7 @@ export function ReactMapbox({
     zoom = 19,
     interactive = true,
     onMove,
-    onClicks,
+    onClick,
     rotateTouchMove,
     pitch = 0,
     centerFn,
@@ -42,13 +43,16 @@ export function ReactMapbox({
         window._map = map
         mapbox.current = map
 
-        // map.on('move', console.log)
 
         if (onMove)
             map.on('move', onMove)
 
-        if (onClicks) {
-            onClicks.forEach(onClick => map.on('click', ...onClick))
+        //Обработка клика/кликов
+        if (onClick) {
+            Array.isArray(onClick) ?
+                onClick.forEach(handlerData => addClickHandler(map, handlerData))
+                :
+                addClickHandler(map, onClick)
         }
 
         map.on('load', () => {
@@ -93,6 +97,11 @@ export function ReactMapbox({
                  duration: 300
              });;
          })*/
+
+        //Удаление карты при unmount компонента
+        return () => {
+            map.remove()
+        }
     }, [container.current])
 
     const SwipeWrapper = ({ children }) => {

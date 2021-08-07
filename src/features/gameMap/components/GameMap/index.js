@@ -16,9 +16,10 @@ export const GameMap = memo(function GameMap() {
             centerFn={$smothCoords.getState}
             pitch={50}
             style="mapbox://styles/jeckyhit/ckr14z8zb0enz17nskd7iii9c"
-            // onClicks={[
-            //     ['building', (e) => console.log(e.features)]
-            // ]}
+            // onClicks={{
+            //     layer: 'building', 
+            //     handler: (e) => console.log(e.features)
+            // }}
             // onClicks={[
             //     [e => console.log(e.features)]
             // ]}
