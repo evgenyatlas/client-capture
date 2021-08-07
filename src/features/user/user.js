@@ -37,6 +37,7 @@ export class User {
     #attackTimeout
     //Время когда атака будет доступной
     #attackAccessTime = 0
+
     #map
     constructor({ player, socket, map, attackTimeout, captureBuildings: buildingCapture }) {
         this.#buildingCapture = buildingCapture
@@ -111,8 +112,7 @@ export class User {
         updateEnergyFactorEv(-captureBuilding.energyFactor)
     }
     //Урон нашему пользователю
-    damage(energy) {
-        this.energy.inc(energy)
+    damage() {
         //Замораживаем позицию
         freezeGeolocation()
         //Вызываем 
@@ -128,22 +128,25 @@ export class User {
     attack = () => {
         //Энергия для атаки
         const attackEnergy = this.attackEnergy.get()
-        //Если не прошло время для доступности атаки или выбранная атака меньше 1, то выходим
-        if (!attackEnergy || !this.#attackAccessTime || this.#attackAccessTime > performance.now()) return
-        //Устанавливаем выбранную энергию в 0
+        //Если атака доступна
+        if (this.attackAccess()) {
+            //Вызываем метод атаки нашего игрока
+            this.player.attack(attackEnergy)
+            //Оповещаем сервер
+            this.socket.emit('attack', attackEnergy)
+        }
+        //Устанавливаем выбранную энергию атаки в 0
         this.attackEnergy.set(0)
-        //Очищаем время доступности атаки
-        this.#attackAccessTime = 0
-        //Вызываем метод атаки нашего игрока
-        this.player.attack(attackEnergy)
-        //Оповещаем сервер
-        this.socket.emit('attack', attackEnergy)
     }
     //Переключения готовности к атаке
     #switchAttackReady = (turn) => {
         this.#attackAccessTime = turn ? performance.now() + this.#attackTimeout : 0
         this.player.switchAttackReady(turn)
         this.socket.emit('switchAttackReady', turn)
+    }
+    //Метод для проверки доступности атаки
+    attackAccess() {
+        return this.attackEnergy.get() && this.#attackAccessTime && this.#attackAccessTime < performance.now()
     }
     //Метод для удаления пользователя
     destroy() {
