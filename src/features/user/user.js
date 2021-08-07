@@ -10,15 +10,19 @@ import { watchObj } from "../../lib/obj/watchObj";
 import createInputStore from "../../lib/effectorKit/createInputStore";
 import { combine } from "effector";
 
+//Отложенный вызов разморозки смены геопозиции
+//Требуется для того, что бы при множественном уроне от других игроков
+//Мы откладывали разморозку смены геопозиции
 const deferUnFreezeGeolocation = debounce(unFreezeGeolocation, Player.ATTACK_TIME)
 
 export class User {
-    static instance = null
-    static ATTACK_TIMEOUT
     id = ''
+    //Игрок к которому привязан пользователь
     player = null
+    //Socket (через который будет происходит взаимодействие с сервером)
     socket = null
-    #captureBuildings
+    //Менеджер захвата строений
+    #buildingCapture
     color
     //доступная энергия
     energy
@@ -29,14 +33,25 @@ export class User {
     //Готовность к атаке
     attackReady
     dead
+    //Время ожидания атаки
     #attackTimeout
-    #attackAvailTime = 0
+    //Время когда атака будет доступной
+    #attackAccessTime = 0
     #map
-    constructor({ player, socket, map, attackTimeout, captureBuildings }) {
+    constructor({ player, socket, map, attackTimeout, captureBuildings: buildingCapture }) {
+        this.#buildingCapture = buildingCapture
+        this.#map = map
+
+        this.player = player
+        this.socket = socket
+        this.id = player.id
+        this.#attackTimeout = attackTimeout
+        //цвет
         this.color = new ValueStore({
             observeObj: [player, 'color'],
             readOnly: true
         })
+        //Доступная энергия
         this.energy = new ValueStore({
             observeObj: [player, 'energy'],
             readOnly: true
@@ -51,23 +66,19 @@ export class User {
                 fn: (attackEnergyFactor, energy) => Math.max(Math.min(Math.round(energy * attackEnergyFactor) - 1, energy - 1), 0)
             }
         })
+        //готовность к атаке
         this.attackReady = this.attackEnergy.map(attackEnergy => attackEnergy > 0)
+        this.dead = this.energy.map(energy => energy <= 0)
 
+        //debug
         this.color.$store.watch((color) => console.log(color, ' color'))
         this.energyFactor.$store.watch((energyFactor) => console.log(energyFactor, ' energyFactor'))
         this.energy.$store.watch(energy => console.log(energy, ' energy'))
         this.attackEnergy.$store.watch((attackEnergy) => console.log(attackEnergy, ' attackEnergy'))
 
-        this.#captureBuildings = captureBuildings
-        this.dead = this.energy.map(energy => energy <= 0)
-        this.#attackTimeout = attackTimeout
-        this.player = player
-        this.#map = map
-        this.socket = socket
-        this.id = player.id
         //Закидываем нашего игрока в store (по большей части для UI)
         setUserEv({ player: this.player, socket })
-        //Прослушивания GPS и смена позиции нашего игрока
+        //Прослушивания GPS и меняем позицию нашего игрока
         $smothCoords.watch(this.#changePosition)
         //Реакция на события (из UI) захвата строения
         captureBuildingUserEv.watch(this.#captureBuilding)
@@ -82,7 +93,7 @@ export class User {
     setAttackEnergy(factor) {
         this.attackEnergy.set(factor)
     }
-    //Смена позиции 
+    //Смена позиции игрока
     #changePosition = (pos) => {
         this.player.changePosition(pos)
         this.socket.emit('changePosition', pos)
@@ -94,16 +105,20 @@ export class User {
         this.player.updateEnergy(-energyCost)
         this.socket.emit('captureBuilding', data.building.getDataServer())
     }
+    //Отмена захвата строения
     unCaptureBuilding = captureBuilding => {
         this.energyFactor.dec(captureBuilding.energyFactor)
         updateEnergyFactorEv(-captureBuilding.energyFactor)
     }
+    //Урон нашему пользователю
     damage(energy) {
-        this.updateEnergy(energy)
         this.energy.inc(energy)
+        //Замораживаем позицию
         freezeGeolocation()
+        //Вызываем 
         deferUnFreezeGeolocation()
     }
+    //Поворот персонажа
     #rotate = ({ bearing, angle }) => {
         this.player.rotate(bearing)
         //Сделать throttle
@@ -113,23 +128,25 @@ export class User {
     attack = () => {
         //Энергия для атаки
         const attackEnergy = this.attackEnergy.get()
-        //Если не прошло время для доступности атаки, то выходим
-        if (!attackEnergy || !this.#attackAvailTime || this.#attackAvailTime > performance.now()) return
+        //Если не прошло время для доступности атаки или выбранная атака меньше 1, то выходим
+        if (!attackEnergy || !this.#attackAccessTime || this.#attackAccessTime > performance.now()) return
         //Устанавливаем выбранную энергию в 0
         this.attackEnergy.set(0)
         //Очищаем время доступности атаки
-        this.#attackAvailTime = 0
+        this.#attackAccessTime = 0
         //Вызываем метод атаки нашего игрока
         this.player.attack(attackEnergy)
         //Оповещаем сервер
         this.socket.emit('attack', attackEnergy)
     }
+    //Переключения готовности к атаке
     #switchAttackReady = (turn) => {
-        this.#attackAvailTime = turn ? performance.now() + this.#attackTimeout : 0
+        this.#attackAccessTime = turn ? performance.now() + this.#attackTimeout : 0
         this.player.switchAttackReady(turn)
         this.socket.emit('switchAttackReady', turn)
     }
+    //Метод для удаления пользователя
     destroy() {
-
+        //Todo
     }
 }
