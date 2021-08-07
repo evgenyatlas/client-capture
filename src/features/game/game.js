@@ -64,7 +64,7 @@ export class Game {
                 setGameConfig(data.GAME)
                 //Инициализируем canvas для отрисовки игрового процесса
                 this.#gameCanvas.init()
-                Player.calcPixel({ map: this.#map, factorPixel: this.#gameCanvas.factorPixel })
+                Player.calcPixel({ map: this.#map, devicePixelRatio: this.#gameCanvas.devicePixelRatio })
                 //Создаем всех игроков полученных с сервера
                 forEachObj(data.players, (playerId, player) => this.onAddPlayer(player))
                 //Создаем пользователя (для работы с текущим игроком)

@@ -1,9 +1,10 @@
 import { getFeatureId } from "../../lib/mapbox/getFeatureId"
 import { Building } from './features/building/building'
 import { captureBuildingEv, hideBuildingInfo, selectBuildingEv } from "./store"
-import { SelectedBuilding } from './features/selectedBuilding/selectBuilding'
+import { RenderSelectedBuilding } from './features/renderSelectedBuilding/renderSelectedBuilding'
 import { CaptureAnim } from "./features/captureAnim/captureAnim"
 import { RenderBuildings } from "./features/renderBuildings/renderBuildings"
+import { ValueStore } from "../../lib/effectorKit/valueStore"
 
 const styleLine = {
     "type": "line",
@@ -34,7 +35,9 @@ export class CaptureBuildings {
     #user = null
     #players
     #buildings = {}
-    #selectedBuilding = null
+    #renderSelectedBuilding = null
+    //Выбранное здание (которое находится в фокусе)
+    selectedCaptureBuilding
     #captureAnim
     #renderBuildings
 
@@ -42,11 +45,14 @@ export class CaptureBuildings {
         this.#map = map
         this.#players = players
         this.#renderBuildings = new RenderBuildings(map, this.#layerStyle)
+        this.selectBuilding = new ValueStore({
+            value: null
+        })
     }
 
     init({ buildings, user }) {
         this.#user = user
-        this.#selectedBuilding = new SelectedBuilding(this.#map)
+        this.#renderSelectedBuilding = new RenderSelectedBuilding(this.#map)
         this.#captureAnim = new CaptureAnim(this.#map, this.#layerStyle)
         /*Обработка событий*/
         //Фокус на строение (выбор)
@@ -62,6 +68,7 @@ export class CaptureBuildings {
             this.load(buildings)
     }
 
+    //Обработка прогрузки здания
     #handlerLoadingBuildings = (buildings) => {
         this.load(buildings)
     }
@@ -85,6 +92,18 @@ export class CaptureBuildings {
         })
     }
 
+    //Выбор здания игроком
+    selectBuilding = (e) => {
+        const feature = e.features[0]
+        const buildingId = getFeatureId(feature)
+        const building = this.getBuilding({
+            id: buildingId,
+            feature: Building.getCleanFeature(feature)
+        })
+        this.selectBuilding.set(building)
+        this.#renderSelectedBuilding.select(building)
+    }
+
     //Подписка на обработку выбора зданий (фокус)
     onSelectBuilding = () => {
         this.#map.on('click', 'building', (e) => {
@@ -94,17 +113,18 @@ export class CaptureBuildings {
                 id: buildingId,
                 feature: Building.getCleanFeature(feature)
             })
-            this.#selectedBuilding.select(building)
+            this.#renderSelectedBuilding.select(building)
         })
     }
 
     //Подписка на отмена фокуса на строение
     onUnSelectBuilding() {
+        this.selectBuilding.set(null)
         hideBuildingInfo.watch(this.unSelectBuilding)
     }
 
     unSelectBuilding = () => {
-        this.#selectedBuilding.unselect()
+        this.#renderSelectedBuilding.unselect()
     }
 
     //Прогрузка зданий

@@ -1,4 +1,4 @@
-drawDamages(ctx, factorPixel, position) {
+drawDamages(ctx, devicePixelRatio, position) {
     if (this.dead) return
     forEachObj(this.#damagingList, (playerId, { color, easing, damageEnergy, energy }, i) => {
         const easingValue = easing.get()
@@ -18,7 +18,7 @@ drawDamages(ctx, factorPixel, position) {
         /**life**/
         //Bacground line
         let barWidth = this.#width * 2
-        let barHeight = 8 * factorPixel
+        let barHeight = 8 * devicePixelRatio
         let x = position.x - barWidth / 2
         let y = position.y + barHeight * 2.8 + ((barHeight + 10) * i)
         ctx.beginPath()

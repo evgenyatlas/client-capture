@@ -163,19 +163,19 @@ export class Player {
         this.energy = 0
         this.dead = true
     }
-    initRender({ ctx, map, factorPixel }) {
+    initRender({ ctx, map, devicePixelRatio }) {
 
     }
     //Метод для отрисовки canvas
-    render({ ctx, map, factorPixel }) {
+    render({ ctx, map, devicePixelRatio }) {
         if (!this.#done) return
         //Получаем позицию в пикселях исходя из геопозиции
         let position = map.project(this.#position.get())
         //Если игрок вне границ, то не рисуем его
         if (!Player.withInBound(position)) return
 
-        position.x = position.x * factorPixel
-        position.y = position.y * factorPixel
+        position.x = position.x * devicePixelRatio
+        position.y = position.y * devicePixelRatio
 
         const img = this.avatar
         /***Отрисовки****/
@@ -184,18 +184,18 @@ export class Player {
         //запуск эффекта подергивания
         this.#jellyAnim.start(ctx, position)
         //Внешний круг
-        this.drawOutline(ctx, factorPixel, position)
+        this.drawOutline(ctx, devicePixelRatio, position)
         //Аватарка
         this.drawAvatar(ctx, position, img, Player.AVATAR_SIZE.width, Player.AVATAR_SIZE.height, map)
         //Смерть 
         if (this.dead)
-            this.drawDead(ctx, factorPixel, position)
+            this.drawDead(ctx, devicePixelRatio, position)
         //остановка эффекта поддергивания
         this.#jellyAnim.stop(ctx, position)
         //Урон
-        this.drawDamages(ctx, factorPixel, position)
+        this.drawDamages(ctx, devicePixelRatio, position)
     }
-    drawOutline(ctx, factorPixel, position) {
+    drawOutline(ctx, devicePixelRatio, position) {
 
         ctx.beginPath()
         ctx.arc(
@@ -223,7 +223,7 @@ export class Player {
         )
     }
 
-    drawDamages(ctx, factorPixel, position) {
+    drawDamages(ctx, devicePixelRatio, position) {
         if (this.dead) return
         forEachObj(this.#damagingList, (playerId, { color, easing, damageEnergy, energy }, i) => {
             const easingValue = easing.get()
@@ -231,7 +231,7 @@ export class Player {
 
         })
     }
-    drawDead(ctx, factorPixel, position) {
+    drawDead(ctx, devicePixelRatio, position) {
         ctx.beginPath()
         ctx.arc(
             position.x,
@@ -245,8 +245,8 @@ export class Player {
         ctx.fill()
     }
     //Статичный метод класса, для рассчета размеров (для отрисовки) в пикселях
-    static calcPixel({ map, factorPixel }) {
-        const meterInPixel = distance2Pixel({ map, factorPixel, distance: 1 })
+    static calcPixel({ map, devicePixelRatio }) {
+        const meterInPixel = distance2Pixel({ map, devicePixelRatio, distance: 1 })
         Player.AVATAR_SIZE.height = Player.AVATAR_SIZE.width = Math.round(config().GAME.PLAYER_WIDTH * meterInPixel)
         Player.OUTLINE_RADIUS = Math.round(Player.AVATAR_SIZE.width / 2 * Player.OUTLINE_RADIUS)
         Player.ATTACK_RAY_RADIUS = Math.round(Player.AVATAR_SIZE.width / 2 * Player.ATTACK_RAY_RADIUS)
@@ -254,7 +254,7 @@ export class Player {
         Player.ATTACK_DISTANCE = Math.round(meterInPixel * config().GAME.ATTACK_DISTANCE - Player.AVATAR_SIZE.width)
     }
     //old
-    // drawAttack(ctx, factorPixel, position, map) {
+    // drawAttack(ctx, devicePixelRatio, position, map) {
 
     //     if (!this.#attackCircle.active) return
     //     const value = this.#attackCircle.get()
@@ -264,7 +264,7 @@ export class Player {
     //     ctx.arc(
     //         position.x,
     //         position.y,
-    //         value * factorPixel,
+    //         value * devicePixelRatio,
     //         0,
     //         2 * Math.PI,
     //         false
@@ -274,7 +274,7 @@ export class Player {
     // }
 
     //NEW
-    // drawAttack(ctx, factorPixel, position, map) {
+    // drawAttack(ctx, devicePixelRatio, position, map) {
 
     //     if (!this.#attackRay.active) return
 
@@ -301,7 +301,7 @@ export class Player {
 
 
     //line around
-    // drawAttack(ctx, factorPixel, position, map) {
+    // drawAttack(ctx, devicePixelRatio, position, map) {
     //     if (!this.#attackCircle.active) return
 
     //     const vt = this.#attackCircle.getT()
@@ -311,7 +311,7 @@ export class Player {
     //     let endAngleBar = reverseEasingLoop(startAngleBar, startAngleBar + 360, vt / 0.2)
 
     //     ctx.beginPath()
-    //     const radius = vt > 0.2 ? reverseEasingLoop(this.#radiusDirectionBar, Player.ATTACK_RADIUS * factorPixel, vt - 0.2) : this.#radiusDirectionBar
+    //     const radius = vt > 0.2 ? reverseEasingLoop(this.#radiusDirectionBar, Player.ATTACK_RADIUS * devicePixelRatio, vt - 0.2) : this.#radiusDirectionBar
     //     if (radius < 0) return
     //     ctx.arc(
     //         position.x,

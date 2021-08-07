@@ -1,7 +1,7 @@
 import { defer } from "../../../../lib/async/defer"
 import { selectBuildingEv } from "../../store"
 
-export class SelectedBuilding {
+export class RenderSelectedBuilding {
     #nameSource = 'selectedBuilding'
     #color = '#a7a7a7'
     #viewSource

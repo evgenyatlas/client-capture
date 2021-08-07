@@ -11,7 +11,7 @@ export class GameCanvas {
         this.renderers = renderers
         this.ctx = null
         this.fps = fps
-        this.factorPixel = 0
+        this.devicePixelRatio = 0
         this.lastCall = 0
         this.canvas = null
         this.launched = false
@@ -28,10 +28,10 @@ export class GameCanvas {
         map._canvasContainer.appendChild(canvas)
 
         const ctx = canvas.getContext('2d')
-        const factorPixel = canvas.width / parseInt(canvas.style.width)
+        const devicePixelRatio = canvas.width / parseInt(canvas.style.width)
 
         this.ctx = ctx
-        this.factorPixel = factorPixel
+        this.devicePixelRatio = devicePixelRatio
         this.canvas = canvas
 
         this.launched = true
@@ -54,14 +54,14 @@ export class GameCanvas {
         const canvas = this.canvas
         const ctx = this.ctx
         const map = this.map
-        const factorPixel = this.factorPixel
+        const devicePixelRatio = this.devicePixelRatio
         const now = performance.now()
         // limit frames
         const deltaCall = now - this.lastCall
         if (deltaCall > (1000 / config().GAME.FPS)) {
             ctx.clearRect(0, 0, canvas.width, canvas.height)
             for (let i = 0; i < this.renderers.length; i++) {
-                this.renderers[i].render({ ctx, map, factorPixel, canvas })
+                this.renderers[i].render({ ctx, map, devicePixelRatio, canvas })
             }
             setFpsEv(`${(1000 / deltaCall).toFixed(0)} ${config().GAME.FPS}`)
             this.lastCall = now
@@ -74,8 +74,8 @@ export class GameCanvas {
             const canvas = this.canvas
             const ctx = this.ctx
             const map = this.map
-            const factorPixel = this.factorPixel
-            render.initRender({ ctx, map, factorPixel, canvas })
+            const devicePixelRatio = this.devicePixelRatio
+            render.initRender({ ctx, map, devicePixelRatio, canvas })
         }
     }
 
