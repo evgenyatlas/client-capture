@@ -33,7 +33,15 @@ export const AttackBtn = memo(function AttackBtn() {
         //Установка выбранной энергии
         const setEnergy = throttle((energy) => user.setAttackEnergy(energy), 100)
 
+        //Вывод выбранной энергии для атаки
         user.attackEnergy.$store.watch(attackEnergy => attackEnergyElm.innerText = attackEnergy)
+        //Установка ожидания
+        user.attackReady.$store.watch(turn =>
+            turn ?
+                attackBtnElm.classList.add('AttackBtn_ready')
+                :
+                attackBtnElm.classList.remove('AttackBtn_ready')
+        )
 
         const onTouchMove = (e) => {
             let clientY = e.touches[0].clientY

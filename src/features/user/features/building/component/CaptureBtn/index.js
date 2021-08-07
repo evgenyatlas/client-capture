@@ -2,18 +2,18 @@ import { Button, Caption, FormItem, FormLayout, Group } from "@vkontakte/vkui"
 import { useStore } from "effector-react"
 import { $captureDistance, $selectedBuilding, captureBuildingEv, captureBuildingFx } from "../../../../../captureBuildings/store"
 import pointToLineDistance from '@turf/point-to-line-distance'
-import { $user, $userColor, captureBuildingUserEv } from "../../../../../user/store"
 import './CaptureBtn.css'
+import { useUser } from "../../../../hooks/useUser"
 
 
 export function CaptureBtn({ notAvailable }) {
-    const { player } = useStore($user)
+    const user = useUser()
+    const { player, color } = user
     const building = useStore($selectedBuilding)
-    const color = useStore($userColor)
     const cost = building.capturedPlayer ? building.energyCostCaptured : building.energyCost
     return (<>
         <Button
-            style={{ background: color }}
+            style={{ background: color.get() }}
             stretched
             disabled={notAvailable}
             size="l"

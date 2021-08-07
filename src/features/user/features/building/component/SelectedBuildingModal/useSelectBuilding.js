@@ -4,10 +4,10 @@ import { CaptureBuildings } from "../../../../../captureBuildings/captureBuildin
 import { $selectedBuilding } from "../../../../../captureBuildings/store"
 import { $smothCoords } from "../../../../../geolocation/store"
 import { useEnergy } from "../../../../hooks/useEnergy"
-import { $userId } from "../../../../store"
+import { useUserId } from "../../../../hooks/useUserId"
 
 export function useSelectBuilding() {
-    const userId = useStore($userId)
+    const userId = useUserId()
     const energy = useEnergy()
     const currCoords = useStore($smothCoords)
     const selectBuilding = useStore($selectedBuilding)

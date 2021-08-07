@@ -1,5 +1,3 @@
-import { useStore } from "effector-react";
-import { $userDead } from "../../../../../user/store";
 import { useIsDead } from "../../../../hooks/useIsDead";
 import './DeadNotice.css'
 

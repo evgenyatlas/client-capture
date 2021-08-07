@@ -1,5 +1,4 @@
 import { useStore } from "effector-react"
-import { $userColor, $userEnergy } from "../../../../../user/store"
 import { $attackAvail, attackEv, $attackEnergy, $availAttack, $attackEnergyStyle } from "../../store"
 import './AttackBtn.css'
 import { useCallback, useMemo, useState } from "react"

@@ -78,12 +78,9 @@ export class User {
         //Устанавливаем начальный поворот в 0
         this.#rotate({ bearing: 0 })
     }
+    //Установка множителя для атаки исходя из доступная энергия * множитель
     setAttackEnergy(factor) {
         this.attackEnergy.set(factor)
-    }
-    //Метод обновления energy для UI
-    updateEnergy = (energy) => {
-        updateEnergyEv(energy)
     }
     //Смена позиции 
     #changePosition = (pos) => {
@@ -94,8 +91,6 @@ export class User {
     #captureBuilding = (data) => {
         const energyCost = data.building.energyCost
         this.energyFactor.inc(data.building.energyFactor)
-        //delete
-        this.updateEnergy(-energyCost)
         this.player.updateEnergy(-energyCost)
         this.socket.emit('captureBuilding', data.building.getDataServer())
     }
@@ -126,8 +121,6 @@ export class User {
         this.#attackAvailTime = 0
         //Вызываем метод атаки нашего игрока
         this.player.attack(attackEnergy)
-        //Обновляем UI
-        this.updateEnergy(-attackEnergy)
         //Оповещаем сервер
         this.socket.emit('attack', attackEnergy)
     }

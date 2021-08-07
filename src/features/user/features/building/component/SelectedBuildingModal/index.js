@@ -1,7 +1,4 @@
 import { Avatar, Button, Group, ModalCard, Separator, SimpleCell, Title } from "@vkontakte/vkui"
-import { useStore } from "effector-react"
-import { EnergyIcon } from "../../../../../../components/EnergyIcon"
-import { $userColor } from "../../../../../user/store"
 import { CaptureBtn } from "../CaptureBtn"
 import { BuildingInfo } from "./BuildingInfo"
 import { useSelectBuilding } from "./useSelectBuilding"

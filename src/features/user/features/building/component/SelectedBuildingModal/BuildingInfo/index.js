@@ -1,11 +1,10 @@
 import { Avatar, Button, Group, ModalCard, Separator, SimpleCell, Title } from "@vkontakte/vkui"
-import { useStore } from "effector-react"
 import { EnergyIcon } from "../../../../../../../components/EnergyIcon"
-import { $userColor } from "../../../../../store"
+import { useColor } from "../../../../../hooks/useColor"
 import './BuildingInfo.css'
 
 export const BuildingInfo = function BuildingInfo({ building }) {
-    const userColor = useStore($userColor)
+    const userColor = useColor()
     return (
         <>
             <Separator className="TopSeparator"></Separator>

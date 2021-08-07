@@ -157,7 +157,6 @@ export class Game {
             //DELETE
             $userEnergyFactor.getState() !== energyFactor && setEnergyFactor(energyFactor)
             this.user.energyFactor.get() !== energyFactor && this.user.energyFactor.set(energyFactor)
-            this.user.updateEnergy(energy)
         }
     }
 

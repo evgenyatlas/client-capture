@@ -54,10 +54,6 @@
     position: absolute;
     top:-20px;
   }
-
-  .AttackBtn_drag .circular-chart {
-    visibility: visible;
-  }
   
   .circle {
     stroke: #4CC790;
@@ -68,12 +64,12 @@
     transition-duration: 0.5s;
   }
 
-  .AttackBtn_drag .circle {
+  .AttackBtn_ready .circle {
     stroke-dasharray: 100 100;
     transition-duration: var(--ATTACK_TIMEOUT);
   }
 
-  .AttackBtn_drag .circular-chart {
+  .AttackBtn_ready .circular-chart {
     animation-name: readiness;
     animation-duration: 1s;
     animation-iteration-count: infinite;

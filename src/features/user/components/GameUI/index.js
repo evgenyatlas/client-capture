@@ -4,7 +4,6 @@ import { AttackEnergy } from "../../features/AttackEnergy/index.js"
 import { DeadNotice } from "../../features/deadNotice/components/DeadNotice"
 import { NumberEnergy } from "../../features/numberEnergy/components/NumberEnergy"
 import { useIsDead } from "../../hooks/useIsDead"
-import { $userColor, $userDead } from "../../store"
 
 import './GameUI.css'
 
