@@ -3,7 +3,7 @@ import { easeComparing } from "../../../lib/easing/easeComparing"
 import { easeInCubic as easeInCubicDefault } from "../../../lib/easing/easeInCubic"
 import { lerp as lerpDefault } from "../../../lib/easing/lerp"
 import { toRadians } from "../../../lib/math/toRadians"
-import { drawDirection } from "./drawDirection"
+import { drawDirection } from "../features/AttackRayRender/lib/drawDirection"
 
 const lerp = easeComparing(lerpDefault)
 const easeInCubic = easeComparing(easeInCubicDefault)

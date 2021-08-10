@@ -8,10 +8,7 @@ import { easeOutQuint } from "../../lib/easing/easeOutQuint"
 import { distance2Pixel } from "../../lib/mapbox/distance2Pixel"
 import { forEachObj } from "../../lib/obj/forEachObj"
 import { AttackRayRender } from "./features/AttackRayRender/attackRayRender"
-import { calcDistanceAttackPixel } from "./lib/calcDistanceAttackPixel"
-import { createAttackRay } from "./lib/createAttackRay"
 import { createPositionEasing } from "./lib/createPositionEasing"
-import { drawDirection } from "./lib/drawDirection"
 import { JellyAnim } from "./lib/jellyAnim"
 
 
@@ -87,12 +84,6 @@ export class Player {
         this.#position = createPositionEasing(position, Player.DURATION_MOVE)
         this.rotation = new EasingValue({ value: rotation, delay: 0, duration: 500 })
         this.attackReady = attackReady
-        this.#attackRayRender = new AttackRayRender({
-            rotation: this.rotation,
-            attackDistance: Player.ATTACK_DISTANCE,
-            attackTime: Player.ATTACK_TIME,
-            stage: this.attackReady ? AttackRayRender.STAGES.ATTACK_READY : undefined
-        })
         this.#jellyAnim = new JellyAnim({ playerPosition: this.#position })
         this.energy = energy
         this.loadSource(avatar)
@@ -164,7 +155,15 @@ export class Player {
         this.dead = true
     }
     initRender({ ctx, map, devicePixelRatio }) {
-
+        console.log('initRender')
+        this.#attackRayRender = new AttackRayRender({
+            ctx,
+            map,
+            color: this.colorOut,
+            rotation: this.rotation,
+            position: this.#position,
+            stage: this.attackReady ? AttackRayRender.STAGES.ATTACK_READY : undefined
+        })
     }
     //Метод для отрисовки canvas
     render({ ctx, map, devicePixelRatio }) {
@@ -180,7 +179,6 @@ export class Player {
         const img = this.avatar
         /***Отрисовки****/
         this.#attackRayRender.render(ctx, position, this.colorOut, map)
-        //Атака
         //запуск эффекта подергивания
         this.#jellyAnim.start(ctx, position)
         //Внешний круг

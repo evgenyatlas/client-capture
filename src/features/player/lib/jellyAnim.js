@@ -1,4 +1,4 @@
-import { reverseEasingLoop } from "../../../lib/easing/reverseEasingLoop"
+import { reverseEasing } from "../../../lib/easing/reverseEasing"
 import { rand } from "../../../lib/math/rand"
 
 export class JellyAnim {
@@ -16,7 +16,7 @@ export class JellyAnim {
         ctx.save()
         const now = performance.now()
         const t = (now + this.#randDelayTime) % this.#duration / this.#duration
-        this.scale = [reverseEasingLoop(1.05, 0.95, t), reverseEasingLoop(1, 1.1, t)]
+        this.scale = [reverseEasing(1.05, 0.95, t), reverseEasing(1, 1.1, t)]
         ctx.scale(this.scale[0], this.scale[1])
 
         position.x = position.x / this.scale[0]
