@@ -5,10 +5,10 @@ import { centerMap } from "./centerMap"
 //angleDirection = направление в котором будет происходить рассчет
 //нужно только в том случае, если у карты есть наклон (bearing) и соответственно искажение
 //для этих же целей используется where (что бы указать откуда считать)
-export function distance2Pixel({ map, distance, where, angleDirection = 0, units = 'meters', devicePixelRatio = 1 }) {
+export function distance2Pixel({ map, distance, where, angleDirection = 0, units = 'meters', }) {
     return Math.round(Math.abs(
         map.project(!where ? centerMap(map) : where).y
         -
         map.project(destination(centerMap(map), distance, angleDirection, { units }).geometry.coordinates).y
-    ) * devicePixelRatio)
+    ))
 }

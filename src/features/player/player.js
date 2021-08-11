@@ -154,7 +154,7 @@ export class Player {
         this.energy = 0
         this.dead = true
     }
-    initRender({ ctx, map, devicePixelRatio }) {
+    initRender({ ctx, map }) {
         console.log('initRender')
         this.#attackRayRender = new AttackRayRender({
             ctx,
@@ -166,15 +166,15 @@ export class Player {
         })
     }
     //Метод для отрисовки canvas
-    render({ ctx, map, devicePixelRatio }) {
+    render({ ctx, map }) {
         if (!this.#done) return
         //Получаем позицию в пикселях исходя из геопозиции
         let position = map.project(this.#position.get())
         //Если игрок вне границ, то не рисуем его
         if (!Player.withInBound(position)) return
 
-        position.x = position.x * devicePixelRatio
-        position.y = position.y * devicePixelRatio
+        position.x = position.x
+        position.y = position.y
 
         const img = this.avatar
         /***Отрисовки****/
@@ -182,18 +182,18 @@ export class Player {
         //запуск эффекта подергивания
         this.#jellyAnim.start(ctx, position)
         //Внешний круг
-        this.drawOutline(ctx, devicePixelRatio, position)
+        this.drawOutline(ctx, position)
         //Аватарка
         this.drawAvatar(ctx, position, img, Player.AVATAR_SIZE.width, Player.AVATAR_SIZE.height, map)
         //Смерть 
         if (this.dead)
-            this.drawDead(ctx, devicePixelRatio, position)
+            this.drawDead(ctx, position)
         //остановка эффекта поддергивания
         this.#jellyAnim.stop(ctx, position)
         //Урон
-        this.drawDamages(ctx, devicePixelRatio, position)
+        this.drawDamages(ctx, position)
     }
-    drawOutline(ctx, devicePixelRatio, position) {
+    drawOutline(ctx, position) {
 
         ctx.beginPath()
         ctx.arc(
@@ -221,7 +221,7 @@ export class Player {
         )
     }
 
-    drawDamages(ctx, devicePixelRatio, position) {
+    drawDamages(ctx, position) {
         if (this.dead) return
         forEachObj(this.#damagingList, (playerId, { color, easing, damageEnergy, energy }, i) => {
             const easingValue = easing.get()
@@ -229,7 +229,7 @@ export class Player {
 
         })
     }
-    drawDead(ctx, devicePixelRatio, position) {
+    drawDead(ctx, position) {
         ctx.beginPath()
         ctx.arc(
             position.x,
@@ -243,8 +243,8 @@ export class Player {
         ctx.fill()
     }
     //Статичный метод класса, для рассчета размеров (для отрисовки) в пикселях
-    static calcPixel({ map, devicePixelRatio }) {
-        const meterInPixel = distance2Pixel({ map, devicePixelRatio, distance: 1 })
+    static calcPixel({ map }) {
+        const meterInPixel = distance2Pixel({ map, distance: 1 })
         Player.AVATAR_SIZE.height = Player.AVATAR_SIZE.width = Math.round(config().GAME.PLAYER_WIDTH * meterInPixel)
         Player.OUTLINE_RADIUS = Math.round(Player.AVATAR_SIZE.width / 2 * Player.OUTLINE_RADIUS)
         Player.ATTACK_RAY_RADIUS = Math.round(Player.AVATAR_SIZE.width / 2 * Player.ATTACK_RAY_RADIUS)

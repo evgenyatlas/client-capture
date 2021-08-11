@@ -1,4 +1,4 @@
-import { GameCanvas } from "../gameCanvas/gameCanvas"
+import { GameRender } from "../gameRender/gameRender"
 import { io } from 'socket.io-client'
 import config, { setGameConfig } from "../../config"
 import { Player } from "../player/player"
@@ -11,13 +11,11 @@ import { DeadArea } from "../deadArea/DeadArea"
 import { getUserData } from "../user/lib/getUserData"
 import { $smothCoords } from "../geolocation/store"
 import { $userEnergyFactor, setEnergyFactor } from "../user/store"
-import destination from "@turf/destination"
-import { centerMap } from "../../lib/mapbox/centerMap"
-import { calcDistanceAttackPixel } from "../player/lib/calcDistanceAttackPixel"
+
 
 export class Game {
     #players = {}
-    #gameCanvas = null
+    #gameRender = null
     #captureBuilding = null
     #deadArea = null
     status = GAME_STATUSES.LOBBY
@@ -27,8 +25,6 @@ export class Game {
 
     constructor({ map }) {
         this.#map = map
-        //Создаем Canvas для отрисовки игрового процесса
-        this.#gameCanvas = new GameCanvas({ map: this.#map })
         //Создаем менеджер для захвата строений
         this.#captureBuilding = new CaptureBuildings({
             map: this.#map,
@@ -56,15 +52,14 @@ export class Game {
         await new Promise((res, rej) => {
             //Подписываемся на события передачи начальных данных
             socket.on('init', (data) => {
-
+                //Создаем Canvas для отрисовки игрового процесса
+                this.#gameRender = new GameRender({ map: this.#map })
                 // this.mySocket = socket
                 this.status = data.status
                 this.startTime = data.startTime
                 //Записываем настройки в конфиг
                 setGameConfig(data.GAME)
-                //Инициализируем canvas для отрисовки игрового процесса
-                this.#gameCanvas.init()
-                Player.calcPixel({ map: this.#map, devicePixelRatio: this.#gameCanvas.devicePixelRatio })
+                Player.calcPixel({ map: this.#map })
                 //Создаем всех игроков полученных с сервера
                 forEachObj(data.players, (playerId, player) => this.onAddPlayer(player))
                 //Создаем пользователя (для работы с текущим игроком)
@@ -134,7 +129,7 @@ export class Game {
         //Создаем Игрока
         const player = new Player(data)
         //Добавляем его в canvas для отрисовки
-        this.#gameCanvas.addRender(player)
+        this.#gameRender.addRender(player)
         //Добавляем его в словарь по id
         this.#players[player.id] = player
     }
@@ -142,7 +137,7 @@ export class Game {
     //Обработка удаления игроков
     onRemovePlayer = (playerId) => {
         //Удаляем из отрисовки (canvas)
-        this.#gameCanvas.removeRender(this.#players[playerId])
+        this.#gameRender.removeRender(this.#players[playerId])
         //Удаляем из словаря
         delete this.#players[playerId]
     }
