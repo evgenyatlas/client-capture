@@ -1,7 +1,6 @@
 import { FormItem, SliderSwitch } from "@vkontakte/vkui"
 import { useState } from "react"
 import config from "../../../../../config"
-import { GameCanvas } from "../../../../gameCanvas/gameCanvas"
 
 export function SelectFPS() {
     const [fps, setfps] = useState(config().GAME.FPS)

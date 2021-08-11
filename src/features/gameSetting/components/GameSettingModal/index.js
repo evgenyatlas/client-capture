@@ -15,8 +15,8 @@ export function GameSettingModal(props) {
             <SelectFPS />
             <Separator style={{ marginTop: '5px', marginBottom: '10px' }}></Separator>
             {
-                inputs.map(inputs =>
-                    <FormLayoutGroup mode="horizontal">
+                inputs.map((inputs, i) =>
+                    <FormLayoutGroup key={i} mode="horizontal">
                         {inputs.map(({ onChange, value, name }) =>
                             <FormItem top={name} key={name} className="clearPaddingVertical GameSettingInput">
                                 <Input className="GameSettingInput__Input" onChange={onChange} value={value} />

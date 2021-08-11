@@ -2,8 +2,6 @@
 import './AttackBtn.css'
 import { memo, useEffect, useRef, useState } from "react"
 import { throttle } from "@vkontakte/vkjs"
-import { useStore } from "effector-react"
-import config from "../../../../../../config"
 import { useColor } from "../../../../hooks/useColor"
 import { useUser } from "../../../../hooks/useUser"
 
@@ -17,7 +15,7 @@ export const AttackBtn = memo(function AttackBtn() {
         if (!ref.current) return
         //Высота элемента
         const heightElm = ref.current.clientHeight
-        //Массив для подписок которые отчистим при unmount
+        //Массив для функций отписок, которые вызовем при unmount
         let unSubs = []
         //Контейнер для самого элемента
         const attackBtnElm = ref.current
@@ -31,16 +29,21 @@ export const AttackBtn = memo(function AttackBtn() {
         const setDefaultPos = () => ref.current.style.transform = `translateY(0px)`
 
         //Установка выбранной энергии
-        const setEnergy = throttle((energy) => user.setAttackEnergy(energy), 100)
+        const setEnergy = (energy) => user.setAttackEnergy(energy)
 
-        //Вывод выбранной энергии для атаки
-        user.attackEnergy.$store.watch(attackEnergy => attackEnergyElm.innerText = attackEnergy)
+        //Добавляем в 
+        //Вывод выбранной энергии для атаки 
+        unSubs.push(
+            user.attackEnergy.$store.watch(throttle(() => attackEnergyElm.innerText = user.attackEnergy.get(), 100))
+        )
         //Установка ожидания
-        user.attackReady.$store.watch(turn =>
-            turn ?
-                attackBtnElm.classList.add('AttackBtn_ready')
-                :
-                attackBtnElm.classList.remove('AttackBtn_ready')
+        unSubs.push(
+            user.attackReady.$store.watch(turn =>
+                turn ?
+                    attackBtnElm.classList.add('AttackBtn_ready')
+                    :
+                    attackBtnElm.classList.remove('AttackBtn_ready')
+            )
         )
 
         const onTouchMove = (e) => {

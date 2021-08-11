@@ -135,6 +135,7 @@ export class User {
             //Оповещаем сервер
             this.socket.emit('attack', attackEnergy)
         }
+        console.log('setEnergy0')
         //Устанавливаем выбранную энергию атаки в 0
         this.attackEnergy.set(0)
     }
