@@ -1,9 +1,11 @@
+import { guard } from "effector";
 import mapboxgl, { Map } from "mapbox-gl";
 import config from "../../config";
 import { delay } from "../../lib/async/delay";
 import { createElement } from "../../lib/dom/createElement";
 //DEBUG
 import { setFpsEv } from "../debug/components/FpsInfo/store";
+import { loop } from "./lib/loop";
 
 interface Render {
     render: Function,
@@ -13,10 +15,10 @@ interface Render {
 export class GameRender {
     private map: Map
     private fps: number
-    private ctx: CanvasRenderingContext2D | undefined
+    private ctx: CanvasRenderingContext2D
     private renderers: Render[]
     private lastCall: number
-    private canvas: HTMLCanvasElement | undefined
+    private canvas: HTMLCanvasElement
     private launched: boolean
     constructor({ map, renderers = [], fps = 75 }: { map: Map, renderers: Render[], fps: number }) {
         this.map = map
@@ -25,9 +27,13 @@ export class GameRender {
         this.lastCall = 0
         this.launched = false
 
-        this.init()
+        const [ctx, canvas] = this.initCanvas()
+        this.ctx = ctx
+        this.canvas = canvas
+
+        this.start()
     }
-    private init() {
+    private initCanvas(): [CanvasRenderingContext2D, HTMLCanvasElement] {
         const map = this.map
         const mapCanvas = map.getCanvas()
         const canvas = createElement('canvas', {
@@ -42,21 +48,19 @@ export class GameRender {
 
         map.getCanvasContainer().appendChild(canvas)
 
-        this.ctx = ctx
-        this.canvas = canvas
-
-        this.launched = true
-        this.renderCycle()
-        map.on('render', this.render)
+        return [ctx, canvas]
     }
 
-    private renderCycle = () => {
-        if (!this.launched) return
+    start() {
+        this.map.on('render', this.render)
+        loop(this.render, requestAnimationFrame)
+        // loop(this.render, (fn: Function) => new Promise(res => res()).then(fn))
+        this.launched = true
+    }
 
-        requestAnimationFrame(this.renderCycle)
-
-        this.render()
-        //DEBUG
+    stop() {
+        this.launched = false
+        this.map.off('render', this.render)
     }
 
     private render = () => {

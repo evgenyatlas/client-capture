@@ -20,7 +20,7 @@ export const AttackBtn = memo(function AttackBtn() {
         //Контейнер для самого элемента
         const attackBtnElm = ref.current
         //Отображения значения
-        const attackEnergyElm = ref.current.children[0].children[0]
+        const attackEnergyElm = attackBtnElm.querySelector('.AttackEnergy__Text')
         //Ставим начальное значения 
         attackEnergyElm.innerText = user.attackEnergy.get()
 
@@ -84,15 +84,18 @@ export const AttackBtn = memo(function AttackBtn() {
             ref={ref}
             className="AttackBtn"
         >
-            <div style={{ backgroundColor: color }} className="AttackBtn__AttackEnergy">
-                <span>0</span>
-                <svg viewBox="0 0 36 36" className="circular-chart">
-                    <path style={{ stroke: color }} className="circle"
-                        d="M18 2.0845
+            <div className="AttackEnergy">
+                <div style={{ backgroundColor: color }} className="AttackEnergy__Bg">
+
+                    <span className=" ">0</span>
+                    <svg viewBox="0 0 36 36" className="circular-chart">
+                        <path style={{ stroke: color }} className="circle"
+                            d="M18 2.0845
       a 15.9155 15.9155 0 0 1 0 31.831
       a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                </svg>
+                        />
+                    </svg>
+                </div>
             </div>
         </button>
     )
