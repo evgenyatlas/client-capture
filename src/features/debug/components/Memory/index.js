@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { DebugTable } from "../DebugTable";
 
 export function Memory() {
-    if (!performance.memory) return null
     const [state, setState] = useState(performance.memory)
     useEffect(() => {
         setInterval(() => {

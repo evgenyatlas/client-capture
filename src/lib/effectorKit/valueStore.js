@@ -47,18 +47,15 @@ export class ValueStore {
     }
 }
 
-export class CombineValueStore extends ValueStore {
-    constructor(props) {
-        { stores, fn, observeObj, value, readOnly }
-        super(props)
-    }
-    set() {
-
-    }
-    get() {
-        return this.$store.getState()
-    }
-}
+// export class CombineValueStore extends ValueStore {
+//     constructor(props) {
+//         { stores, fn, observeObj, value, readOnly }
+//         super(props)
+//     }
+//     get() {
+//         return this.$store.getState()
+//     }
+// }
 
 
 export class CounterValueStore extends ValueStore {

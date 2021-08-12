@@ -11,15 +11,15 @@ interface Render {
 }
 
 export class GameRender {
-    #map: Map
-    fps: number
-    #ctx: CanvasRenderingContext2D | undefined
-    renderers: Render[]
-    lastCall: number
-    canvas: HTMLCanvasElement | undefined
-    launched: boolean
+    private map: Map
+    private fps: number
+    private ctx: CanvasRenderingContext2D | undefined
+    private renderers: Render[]
+    private lastCall: number
+    private canvas: HTMLCanvasElement | undefined
+    private launched: boolean
     constructor({ map, renderers = [], fps = 75 }: { map: Map, renderers: Render[], fps: number }) {
-        this.#map = map
+        this.map = map
         this.renderers = renderers
         this.fps = fps
         this.lastCall = 0
@@ -27,8 +27,8 @@ export class GameRender {
 
         this.init()
     }
-    init() {
-        const map = this.#map
+    private init() {
+        const map = this.map
         const mapCanvas = map.getCanvas()
         const canvas = createElement('canvas', {
             width: mapCanvas.width,
@@ -42,7 +42,7 @@ export class GameRender {
 
         map.getCanvasContainer().appendChild(canvas)
 
-        this.#ctx = ctx
+        this.ctx = ctx
         this.canvas = canvas
 
         this.launched = true
@@ -50,7 +50,7 @@ export class GameRender {
         map.on('render', this.render)
     }
 
-    renderCycle = () => {
+    private renderCycle = () => {
         if (!this.launched) return
 
         requestAnimationFrame(this.renderCycle)
@@ -59,10 +59,10 @@ export class GameRender {
         //DEBUG
     }
 
-    render = () => {
+    private render = () => {
         const canvas = this.canvas
-        const ctx = this.#ctx
-        const map = this.#map
+        const ctx = this.ctx
+        const map = this.map
         const now = performance.now()
         const deltaCall = now - this.lastCall
         // limit frames
@@ -80,8 +80,8 @@ export class GameRender {
         this.renderers.push(render)
         if (render.initRender) {
             const canvas = this.canvas
-            const ctx = this.#ctx
-            const map = this.#map
+            const ctx = this.ctx
+            const map = this.map
             render.initRender({ ctx, map, canvas })
         }
     }

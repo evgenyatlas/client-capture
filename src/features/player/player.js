@@ -155,7 +155,6 @@ export class Player {
         this.dead = true
     }
     initRender({ ctx, map }) {
-        console.log('initRender')
         this.#attackRayRender = new AttackRayRender({
             ctx,
             map,

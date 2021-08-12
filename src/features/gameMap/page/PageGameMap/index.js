@@ -29,6 +29,8 @@ export const PageGameMap = memo(function PageGameMap() {
                         //Рендирим игровой интерфейс только после загрузки игры
                         game
                         &&
+                        game.user
+                        &&
                         <>
                             <GameUI />
                             <DebugInfoList />

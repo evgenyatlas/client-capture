@@ -7,7 +7,7 @@ export function DebugInfoList() {
     return (
         <div className="DebugInfoList">
             <FpsInfo />
-            <Memory />
+            {performance.memory && <Memory />}
 
             <GpsInfo />
         </div>

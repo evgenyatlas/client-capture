@@ -1,14 +1,9 @@
 import { $smothCoords, freezeGeolocation, unFreezeGeolocation } from "../geolocation/store";
-import { captureBuildingUserEv, setUserEv, updateEnergyEv, updateEnergyFactorEv } from "./store";
-import { debounce, throttle } from "@vkontakte/vkjs";
+import { captureBuildingUserEv, setUserEv, updateEnergyFactorEv } from "./store";
+import { debounce } from "@vkontakte/vkjs";
 import { Player } from "../player/player";
-import { easeOutElastic } from "../../lib/easing/easeOutElastic";
-import { easeOutBack } from "../../lib/easing/easeOutBack";
-import config from "../../config";
-import { CombineValueStore, CounterValueStore, ValueStore } from "../../lib/effectorKit/valueStore";
-import { watchObj } from "../../lib/obj/watchObj";
-import createInputStore from "../../lib/effectorKit/createInputStore";
-import { combine } from "effector";
+import { CounterValueStore, ValueStore } from "../../lib/effectorKit/valueStore";
+
 
 //Отложенный вызов разморозки смены геопозиции
 //Требуется для того, что бы при множественном уроне от других игроков
