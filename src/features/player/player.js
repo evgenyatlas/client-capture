@@ -9,7 +9,7 @@ import { distance2Pixel } from "../../lib/mapbox/distance2Pixel"
 import { forEachObj } from "../../lib/obj/forEachObj"
 import { AttackRayRender } from "./features/AttackRayRender/attackRayRender"
 import { createPositionEasing } from "./lib/createPositionEasing"
-import { JellyAnim } from "./lib/jellyAnim"
+import { Effects } from "./lib/Effects"
 
 
 export class Player {
@@ -56,7 +56,7 @@ export class Player {
     }
     //(EeasingValue) Словарь в котором храняться обьекты для отрисовки ранения
     #damagingList = {}
-    #jellyAnim
+    #effects
     avatar = null
     #done = false
     dead = false
@@ -84,7 +84,6 @@ export class Player {
         this.#position = createPositionEasing(position, Player.DURATION_MOVE)
         this.rotation = new EasingValue({ value: rotation, delay: 0, duration: 500 })
         this.attackReady = attackReady
-        this.#jellyAnim = new JellyAnim({ playerPosition: this.#position })
         this.energy = energy
         this.loadSource(avatar)
         this.dead = dead
@@ -163,6 +162,7 @@ export class Player {
             position: this.#position,
             stage: this.attackReady ? AttackRayRender.STAGES.ATTACK_READY : undefined
         })
+        this.#effects = new Effects({ ctx })
     }
     //Метод для отрисовки canvas
     render({ ctx, map }) {
@@ -176,19 +176,17 @@ export class Player {
         position.y = position.y
 
         const img = this.avatar
+
         /***Отрисовки****/
         this.#attackRayRender.render(ctx, position, this.colorOut, map)
-        //запуск эффекта подергивания
-        this.#jellyAnim.start(ctx, position)
+        //запуск эффектов (поддергивания и тд)
+        this.#effects.run(position, this.dead)
         //Внешний круг
         this.drawOutline(ctx, position)
         //Аватарка
         this.drawAvatar(ctx, position, img, Player.AVATAR_SIZE.width, Player.AVATAR_SIZE.height, map)
-        //Смерть 
-        if (this.dead)
-            this.drawDead(ctx, position)
-        //остановка эффекта поддергивания
-        this.#jellyAnim.stop(ctx, position)
+        //остановка эффектов
+        this.#effects.stop(position, this.dead)
         //Урон
         this.drawDamages(ctx, position)
     }
@@ -227,19 +225,6 @@ export class Player {
 
 
         })
-    }
-    drawDead(ctx, position) {
-        ctx.beginPath()
-        ctx.arc(
-            position.x,
-            position.y,
-            Player.OUTLINE_RADIUS,
-            0,
-            2 * Math.PI,
-            false
-        )
-        ctx.fillStyle = Player.DEAD_COLOR
-        ctx.fill()
     }
     //Статичный метод класса, для рассчета размеров (для отрисовки) в пикселях
     static calcPixel({ map }) {
