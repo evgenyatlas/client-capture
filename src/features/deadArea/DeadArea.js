@@ -12,7 +12,7 @@ export class DeadArea {
         this.#map = map
         this.initView()
     }
-    render({ ctx = new CanvasRenderingContext2D, map, devicePixelRatio }) {
+    render({ ctx = new CanvasRenderingContext2D, map }) {
         return
         if (!this.#polygon) return
         ctx.beginPath();
@@ -20,10 +20,10 @@ export class DeadArea {
         this.#polygon.map((coords, i) => {
             const pos = map.project(coords)
             if (i === 0) {
-                ctx.moveTo(pos.x * devicePixelRatio, pos.y * devicePixelRatio);
+                ctx.moveTo(pos.x, pos.y);
                 return
             }
-            ctx.lineTo(pos.x * devicePixelRatio, pos.y * devicePixelRatio);
+            ctx.lineTo(pos.x, pos.y);
         })
         // console.timeEnd()
         // ctx.fillStyle = 'black'

@@ -15,10 +15,10 @@ interface Render {
 export class GameRender {
     private map: Map
     private fps: number
-    private ctx: CanvasRenderingContext2D
+    private ctx!: CanvasRenderingContext2D
     private renderers: Render[]
     private lastCall: number
-    private canvas: HTMLCanvasElement
+    private canvas!: HTMLCanvasElement
     private launched: boolean
     constructor({ map, renderers = [], fps = 75 }: { map: Map, renderers: Render[], fps: number }) {
         this.map = map
@@ -27,13 +27,11 @@ export class GameRender {
         this.lastCall = 0
         this.launched = false
 
-        const [ctx, canvas] = this.initCanvas()
-        this.ctx = ctx
-        this.canvas = canvas
+        this.initCanvas()
 
         this.start()
     }
-    private initCanvas(): [CanvasRenderingContext2D, HTMLCanvasElement] {
+    private initCanvas() {
         const map = this.map
         const mapCanvas = map.getCanvas()
         const canvas = createElement('canvas', {
@@ -48,13 +46,15 @@ export class GameRender {
 
         map.getCanvasContainer().appendChild(canvas)
 
-        return [ctx, canvas]
+
+        this.ctx = ctx
+        this.canvas = canvas
     }
 
     start() {
         this.map.on('render', this.render)
         loop(this.render, requestAnimationFrame)
-        // loop(this.render, (fn: Function) => new Promise(res => res()).then(fn))
+        loop(this.render, (fn: Function) => setTimeout(fn, 10))
         this.launched = true
     }
 

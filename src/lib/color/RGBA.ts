@@ -25,7 +25,7 @@ export class RGBA {
     Создание экземпляра из строки
     */
     static fromStr(str: string): RGBA {
-        const rgba: (rgba | null) = str.replace(/\s/g, '').match(/^rgba?\((\d+),(\d+),(\d+),(\d+)/i)
+        const rgba = str.replace(/\s/g, '').match(/^rgba?\((\d+),(\d+),(\d+),(\d+)/i)
         if (rgba === null) throw new Error('the str is not rgba')
         return new RGBA(rgba.slice(1))
     }

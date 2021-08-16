@@ -32,7 +32,7 @@ export class Game {
         })
         //Создаем область смерти
         this.#deadArea = new DeadArea(map)
-        // this.#gameCanvas.addRender(this.#deadArea)
+
     }
 
     async init() {
@@ -66,7 +66,7 @@ export class Game {
                 this.user = new User({ player: this.#players[userId], socket, map: this.#map, attackTimeout: data.GAME.ATTACK_TIMEOUT })
                 //Инициализируем менеджер захвата строений
                 this.#captureBuilding.init({ user: this.user, buildings: data.captureBuildings })
-
+                //this.#gameRender.addRender(this.#deadArea)
                 res()
             })
 
