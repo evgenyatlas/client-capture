@@ -8,12 +8,13 @@
 
 .NumberEnergy__Head {
     width: 50%;
-    background: #9d9d9d;
+    background: white;
     height: 7px;
     margin-left: 25%;
     border-top-left-radius: 2px;
     border-top-right-radius: 2px;
     margin-bottom: -1px;
+    box-shadow: 0px 0px 8px 0px rgb(34 60 80 / 20%);
 }
 
 .NumberEnergy__Body {
@@ -22,7 +23,7 @@
     top: 0;
     left: 0;
     z-index: 1;
-    border: 3px solid #9d9d9d;
+    border: 3px solid white;
     box-sizing: border-box;
     border-radius: 7px;
     overflow: hidden;
@@ -30,6 +31,7 @@
     align-items: center;
     justify-content: center;
     background: #9d9d9d9c;
+    box-shadow: 0px 0px 8px 0px rgb(34 60 80 / 20%);
 }
 
 .NumberEnergy__Number {
@@ -72,7 +74,7 @@
 }
 
 .EnergyFactor {
-    border: 3px solid #9d9d9d;
+    border: 3px solid white;
     margin-top: 1px;
     height: 20px;
     line-height: 20px;
@@ -86,7 +88,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    position: relative
+    position: relative;
+    box-shadow: 0px 0px 8px 0px rgb(34 60 80 / 20%);
 }
 
 .EnergyFactor_hidden {

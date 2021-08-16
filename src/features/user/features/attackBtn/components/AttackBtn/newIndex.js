@@ -34,7 +34,7 @@ export const AttackBtn = memo(function AttackBtn() {
         //Добавляем в 
         //Вывод выбранной энергии для атаки 
         unSubs.push(
-            user.attackEnergy.$store.watch(throttle(() => attackEnergyElm.innerText = user.attackEnergy.get(), 100))
+            user.attackEnergy.$store.watch(throttle(() => attackEnergyElm.innerText = user.attackEnergy.get() || '', 100))
         )
         //Установка ожидания
         unSubs.push(
@@ -85,9 +85,8 @@ export const AttackBtn = memo(function AttackBtn() {
             className="AttackBtn"
         >
             <div className="AttackEnergy">
-                <div style={{ backgroundColor: color }} className="AttackEnergy__Bg">
-
-                    <span className=" ">0</span>
+                <div style={{ backgroundColor: color }} className="AttackEnergy__Circle">
+                    <span className="AttackEnergy__Text"></span>
                     <svg viewBox="0 0 36 36" className="circular-chart">
                         <path style={{ stroke: color }} className="circle"
                             d="M18 2.0845
